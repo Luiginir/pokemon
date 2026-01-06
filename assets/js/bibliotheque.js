@@ -171,11 +171,15 @@ window.addEventListener('DOMContentLoaded', function() {
             // Le Number dans le JSON commence à 1, donc on calcule le numéro Pokédex (252 pour Treecko)
             const pokemonNumber = pokemon.Number + 251; // Génération 3 commence au #252
             const displayName = frenchNames[pokemonNumber] ? frenchNames[pokemonNumber].name_fr : pokemon.Name;
+            const imageUrl = frenchNames[pokemonNumber] ? frenchNames[pokemonNumber].image : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemonNumber}.png`;
 
             card.innerHTML = `
                 <div class="card-header">
                     <p>#${pokemonNumber}</p>
                     <p>${pokemon.HP} PV</p>
+                </div>
+                <div class="pokemon-image">
+                    <img src="${imageUrl}" alt="${displayName}" loading="lazy">
                 </div>
                 <h2>${displayName}</h2>
                 <p class="type">Type: ${types}</p>
