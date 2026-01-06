@@ -1,21 +1,59 @@
 body {
     background: #7ddaff;
-    background: linear-gradient(180deg,rgba(125, 218, 255, 1) 0%, rgba(11, 140, 191, 1) 72%);
+    background: linear-gradient(180deg,rgba(125, 218, 255, 1) 0%, rgb(122, 82, 204) 100%);
     margin: 0;
     padding: 0;
+    bottom: 0;
+}
+
+h3 {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 1.5rem;
+    color: #333;
 }
 
 .filter-container {
     text-align: center;
     margin: 20px 0;
     padding: 15px;
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.search-section, .filter-section, .sort-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .filter-container label {
     font-size: 18px;
     font-weight: bold;
-    margin-right: 10px;
     color: #333;
+}
+
+.filter-container input[type="text"] {
+    padding: 8px 15px;
+    font-size: 16px;
+    border: 2px solid #333;
+    border-radius: 8px;
+    background-color: white;
+    min-width: 250px;
+    transition: all 0.3s ease;
+}
+
+.filter-container input[type="text"]:hover {
+    border-color: #5090d6;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.filter-container input[type="text"]:focus {
+    outline: none;
+    border-color: #5090d6;
+    box-shadow: 0 0 10px rgba(80, 144, 214, 0.5);
 }
 
 .filter-container select {
@@ -23,7 +61,7 @@ body {
     font-size: 16px;
     border: 2px solid #333;
     border-radius: 8px;
-    background-color: white;
+    background-color: rgba(255, 255, 255, 0.616);
     cursor: pointer;
     transition: all 0.3s ease;
 }
@@ -55,7 +93,7 @@ body {
     text-align: center;
     box-shadow: 2px 2px 12px rgba(0,0,0,0.1);
     width: 250px;
-    transition: transform 0.3s ease-out, box-shadow 0.3s ease;
+    transition: transform 0.6s ease-out, box-shadow 0.6s ease;
     transform-style: preserve-3d;
     transform-origin: center center;
     position: relative;
@@ -71,7 +109,7 @@ body {
     height: 100%;
     background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 50%, rgba(255,255,255,0.4) 100%);
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.6s ease;
     pointer-events: none;
     z-index: 1;
 }
@@ -90,6 +128,17 @@ body {
     z-index: 10;
 }
 
+.card h2 {
+    margin: 10px 0;
+    font-size: 1.5rem;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+}
+
 .grass {
     background-color: #91c12f;
 }
@@ -100,6 +149,7 @@ body {
 
 .water {
     background-color: #5090d6;
+    color: #fff;
 }
 
 .electric {
@@ -128,6 +178,7 @@ body {
 
 .dark {
     background-color: #5a5465;
+    color: #fff;
 }
 
 .bug {
@@ -144,22 +195,27 @@ body {
 
 .poison {
     background-color: #b567ce;
+    color: #fff;
 }
 
 .ghost {
     background-color: #655bbb;
+    color: #fff;
 }
 
 .dragon {
     background-color: #0b6dc3;
+    color: #fff;
 }
 
 .steel {
     background-color: #5a8ea2;
+    color: #fff;
 }
 
 .normal {
     background-color: #919aa2;
+    color: #fff;
 }
 
 .card:hover {
@@ -175,15 +231,15 @@ body {
     border-radius: 6px;
     padding: 10px;
     margin-top: 10px;
-    border: 2px solid #4CAF50;
     opacity: 0;
     max-height: 0;
     overflow: hidden;
     transform: translateY(-10px);
-    transition: opacity 0.5s ease, max-height 0.5s ease, transform 0.5s ease;
+    transition: opacity 0.6s ease, max-height 0.6s ease, transform 0.6s ease;
 }
 
-.card:hover .stats {
+.card:hover .stats,
+.card.show-stats .stats {
     opacity: 1;
     max-height: 300px;
     transform: translateY(0);

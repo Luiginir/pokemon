@@ -9,31 +9,49 @@
 </head>
 <body>
     <h1>Bienvenue à la Bibliothèque Pokémon</h1>
-    <p>Explorez les données des Pokémon et découvrez leurs caractéristiques uniques!</p>
+    <h3>Explorez les données des Pokémon et découvrez leurs caractéristiques.</h3>
     
     <div class="filter-container">
-        <label for="typeFilter">Filtrer par type :</label>
-        <select id="typeFilter">
-            <option value="all">Tous les types</option>
-            <option value="Grass">Plante</option>
-            <option value="Fire">Feu</option>
-            <option value="Water">Eau</option>
-            <option value="Electric">Électrik</option>
-            <option value="Psychic">Psy</option>
-            <option value="Ice">Glace</option>
-            <option value="Dragon">Dragon</option>
-            <option value="Dark">Ténèbres</option>
-            <option value="Fairy">Fée</option>
-            <option value="Poison">Poison</option>
-            <option value="Ground">Sol</option>
-            <option value="Flying">Vol</option>
-            <option value="Bug">Insecte</option>
-            <option value="Rock">Roche</option>
-            <option value="Ghost">Spectre</option>
-            <option value="Steel">Acier</option>
-            <option value="Normal">Normal</option>
-            <option value="Fighting">Combat</option>
-        </select>
+        <div class="search-section">
+            <label for="searchInput">Rechercher :</label>
+            <input type="text" id="searchInput" placeholder="Nom du Pokémon...">
+        </div>
+        
+        <div class="filter-section">
+            <label for="typeFilter">Filtrer par type :</label>
+            <select id="typeFilter">
+                <option value="all">Tous les types</option>
+                <option value="Grass">Plante</option>
+                <option value="Fire">Feu</option>
+                <option value="Water">Eau</option>
+                <option value="Electric">Électrik</option>
+                <option value="Psychic">Psy</option>
+                <option value="Ice">Glace</option>
+                <option value="Dragon">Dragon</option>
+                <option value="Dark">Ténèbres</option>
+                <option value="Fairy">Fée</option>
+                <option value="Poison">Poison</option>
+                <option value="Ground">Sol</option>
+                <option value="Flying">Vol</option>
+                <option value="Bug">Insecte</option>
+                <option value="Rock">Roche</option>
+                <option value="Ghost">Spectre</option>
+                <option value="Steel">Acier</option>
+                <option value="Normal">Normal</option>
+                <option value="Fighting">Combat</option>
+            </select>
+        </div>
+        
+        <div class="sort-section">
+            <label for="sortBy">Trier par :</label>
+            <select id="sortBy">
+                <option value="type">Type</option>
+                <option value="name">Nom (A-Z)</option>
+                <option value="hp">PV (décroissant)</option>
+                <option value="attack">Attaque (décroissant)</option>
+                <option value="defense">Défense (décroissant)</option>
+            </select>
+        </div>
     </div>
     
     <div class="bibliotheque">

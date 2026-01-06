@@ -1,28 +1,83 @@
 window.addEventListener('DOMContentLoaded', function() {
     const gridContainer = document.querySelector('.bibliotheque .grid');
     const typeFilter = document.getElementById('typeFilter');
+    const sortBy = document.getElementById('sortBy');
     let allPokemonData = [];
+    let frenchNames = {};
 
-    fetch('assets/data/pokemons.json')
-        .then(response => response.json())
-        .then(data => {
-            allPokemonData = data;
+    // Charger les noms français
+    Promise.all([
+        fetch('assets/data/pokemons.json').then(response => response.json()),
+        fetch('assets/data/pokemons_gen3_fr.json').then(response => response.json())
+    ])
+        .then(([pokemonData, frenchNamesData]) => {
+            allPokemonData = pokemonData;
+            frenchNames = frenchNamesData;
             // Trier par type principal dès le chargement
-            const sortedData = [...data].sort((a, b) => a['Type 1'].localeCompare(b['Type 1']));
+            const sortedData = [...pokemonData].sort((a, b) => a['Type 1'].localeCompare(b['Type 1']));
             displayPokemons(sortedData);
             
             // Ajouter l'événement de filtrage
             typeFilter.addEventListener('change', function() {
-                const selectedType = this.value;
-                if (selectedType === 'all') {
-                    // Trier par type principal
-                    const sortedData = [...allPokemonData].sort((a, b) => a['Type 1'].localeCompare(b['Type 1']));
-                    displayPokemons(sortedData);
-                } else {
-                    const filteredData = allPokemonData.filter(pokemon => pokemon['Type 1'] === selectedType);
-                    displayPokemons(filteredData);
-                }
+                filterAndDisplay();
             });
+            
+            // Ajouter l'événement de tri
+            sortBy.addEventListener('change', function() {
+                filterAndDisplay();
+            });
+            
+            // Rechercher par nom
+            const searchInput = document.getElementById('searchInput');
+            searchInput.addEventListener('input', function() {
+                filterAndDisplay();
+            });
+            
+            // Fonction combinée de filtrage et recherche
+            function filterAndDisplay() {
+                const selectedType = typeFilter.value;
+                const searchQuery = searchInput.value.toLowerCase();
+                const sortOption = sortBy.value;
+                
+                let filteredData = allPokemonData;
+                
+                // Filtrer par type
+                if (selectedType !== 'all') {
+                    filteredData = filteredData.filter(pokemon => pokemon['Type 1'] === selectedType);
+                }
+                
+                // Filtrer par nom
+                if (searchQuery) {
+                    filteredData = filteredData.filter(pokemon => {
+                        const pokemonNumber = pokemon.Number + 251;
+                        const frenchName = frenchNames[pokemonNumber] ? frenchNames[pokemonNumber].name_fr : pokemon.Name;
+                        return pokemon.Name.toLowerCase().includes(searchQuery) || 
+                               frenchName.toLowerCase().includes(searchQuery);
+                    });
+                }
+                
+                // Trier selon l'option sélectionnée
+                filteredData = [...filteredData].sort((a, b) => {
+                    switch(sortOption) {
+                        case 'type':
+                            return a['Type 1'].localeCompare(b['Type 1']);
+                        case 'name':
+                            const nameA = frenchNames[a.Number + 251] ? frenchNames[a.Number + 251].name_fr : a.Name;
+                            const nameB = frenchNames[b.Number + 251] ? frenchNames[b.Number + 251].name_fr : b.Name;
+                            return nameA.localeCompare(nameB);
+                        case 'hp':
+                            return b.HP - a.HP;
+                        case 'attack':
+                            return b.Attack - a.Attack;
+                        case 'defense':
+                            return b.Defense - a.Defense;
+                        default:
+                            return 0;
+                    }
+                });
+                
+                displayPokemons(filteredData);
+            }
         })
         .catch(error => console.error('Error loading Pokémon data:', error));
 
@@ -94,36 +149,67 @@ window.addEventListener('DOMContentLoaded', function() {
             }
             
             //Ajout de la traduction du type en français
-            types = types.replace('Grass', 'Plante')
-                            .replace('Fire', 'Feu')
-                            .replace('Water', 'Eau')
-                            .replace('Electric', 'Électrik')
-                            .replace('Psychic', 'Psy')
-                            .replace('Ice', 'Glace')
-                            .replace('Dragon', 'Dragon')
-                            .replace('Dark', 'Ténèbres')
-                            .replace('Fairy', 'Fée')
-                            .replace('Poison', 'Poison')
-                            .replace('Ground', 'Sol')
-                            .replace('Flying', 'Vol')
-                            .replace('Bug', 'Insecte')
-                            .replace('Rock', 'Roche')
-                            .replace('Ghost', 'Spectre')
-                            .replace('Steel', 'Acier')
+            types = types.replace('Grass', '🍃Plante')
+                            .replace('Fire', '🔥Feu')
+                            .replace('Water', '💧Eau')
+                            .replace('Electric', '⚡Électrik')
+                            .replace('Psychic', '🔮Psy')
+                            .replace('Ice', '❄️Glace')
+                            .replace('Dragon', '🐉Dragon')
+                            .replace('Dark', '🌑Ténèbres')
+                            .replace('Fairy', '🧚‍♀️Fée')
+                            .replace('Poison', '☠️Poison')
+                            .replace('Ground', '🌍Sol')
+                            .replace('Flying', '🕊️Vol')
+                            .replace('Bug', '🐛Insecte')
+                            .replace('Rock', '🪨Roche')
+                            .replace('Ghost', '👻Spectre')
+                            .replace('Steel', '⚙️Acier')
                             .replace('Normal', 'Normal');
 
+            // Obtenir le nom français si disponible
+            // Le Number dans le JSON commence à 1, donc on calcule le numéro Pokédex (252 pour Treecko)
+            const pokemonNumber = pokemon.Number + 251; // Génération 3 commence au #252
+            const displayName = frenchNames[pokemonNumber] ? frenchNames[pokemonNumber].name_fr : pokemon.Name;
+
             card.innerHTML = `
-                <h2>${pokemon.Name}</h2>
+                <div class="card-header">
+                    <p>#${pokemonNumber}</p>
+                    <p>${pokemon.HP} PV</p>
+                </div>
+                <h2>${displayName}</h2>
                 <p class="type">Type: ${types}</p>
                 <div class="stats">
-                    <p>PV: ${pokemon.HP}</p>
-                    <p>Attaque: ${pokemon.Attack}</p>
-                    <p>Défense: ${pokemon.Defense}</p>
-                    <p>Attaque spé: ${pokemon['Sp. Atk']}</p>
-                    <p>Défense spé: ${pokemon['Sp. Def']}</p>
-                    <p>Vitesse: ${pokemon.Speed}</p>
+                    <p>PV: <b>${pokemon.HP}</b></p>
+                    <p>Attaque: <b>${pokemon.Attack}</b></p>
+                    <p>Défense: <b>${pokemon.Defense}</b></p>
                 </div>
             `;
+            
+            // Fonction pour afficher les stats de toutes les cartes sur la même ligne
+            card.addEventListener('mouseenter', function() {
+                const cards = gridContainer.querySelectorAll('.card');
+                const hoveredRect = this.getBoundingClientRect();
+                
+                // D'abord, retirer la classe show-stats de toutes les cartes qui ne sont pas sur la même ligne
+                cards.forEach(c => {
+                    const cRect = c.getBoundingClientRect();
+                    if (Math.abs(cRect.top - hoveredRect.top) >= 10) {
+                        c.classList.remove('show-stats');
+                        delete c.dataset.currentRow;
+                    }
+                });
+                
+                // Ensuite, ajouter la classe aux cartes de la même ligne
+                cards.forEach(c => {
+                    const cRect = c.getBoundingClientRect();
+                    // Vérifier si la carte est sur la même ligne (tolérance de ±10px)
+                    if (Math.abs(cRect.top - hoveredRect.top) < 10) {
+                        c.classList.add('show-stats');
+                        c.dataset.currentRow = hoveredRect.top;
+                    }
+                });
+            });
             
             // Ajouter l'effet de suivi de la souris
             card.addEventListener('mousemove', (e) => {
@@ -157,4 +243,13 @@ window.addEventListener('DOMContentLoaded', function() {
             gridContainer.appendChild(card);
         });
     }
+    
+    // Détecter quand on quitte complètement la grille pour masquer les stats (une seule fois, en dehors de la boucle)
+    gridContainer.addEventListener('mouseleave', function() {
+        const cards = gridContainer.querySelectorAll('.card');
+        cards.forEach(c => {
+            c.classList.remove('show-stats');
+            delete c.dataset.currentRow;
+        });
+    });
 });
