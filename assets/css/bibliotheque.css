@@ -1,0 +1,190 @@
+body {
+    background: #7ddaff;
+    background: linear-gradient(180deg,rgba(125, 218, 255, 1) 0%, rgba(11, 140, 191, 1) 72%);
+    margin: 0;
+    padding: 0;
+}
+
+.filter-container {
+    text-align: center;
+    margin: 20px 0;
+    padding: 15px;
+}
+
+.filter-container label {
+    font-size: 18px;
+    font-weight: bold;
+    margin-right: 10px;
+    color: #333;
+}
+
+.filter-container select {
+    padding: 8px 15px;
+    font-size: 16px;
+    border: 2px solid #333;
+    border-radius: 8px;
+    background-color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.filter-container select:hover {
+    border-color: #5090d6;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.filter-container select:focus {
+    outline: none;
+    border-color: #5090d6;
+    box-shadow: 0 0 10px rgba(80, 144, 214, 0.5);
+}
+
+.grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 16px;
+    perspective: 1000px;
+}
+
+.card {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 16px;
+    text-align: center;
+    box-shadow: 2px 2px 12px rgba(0,0,0,0.1);
+    width: 250px;
+    transition: transform 0.3s ease-out, box-shadow 0.3s ease;
+    transform-style: preserve-3d;
+    transform-origin: center center;
+    position: relative;
+    overflow: hidden;
+}
+
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 50%, rgba(255,255,255,0.4) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.card:hover::before {
+    opacity: 1;
+}
+
+.card > * {
+    position: relative;
+    z-index: 2;
+}
+
+.card:hover {
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    z-index: 10;
+}
+
+.grass {
+    background-color: #91c12f;
+}
+
+.fire {
+    background-color: #ff9d55;
+}
+
+.water {
+    background-color: #5090d6;
+}
+
+.electric {
+    background-color: #f4d23c;
+}
+
+.psychic {
+    background-color: #fa7179;
+}
+
+.ice {
+    background-color: #73cec0;
+}
+
+.fighting {
+    background-color: #ce416b;
+}
+
+.ground {
+    background-color: #d97845;
+}
+
+.rock {
+    background-color: #c5b78c;
+}
+
+.dark {
+    background-color: #5a5465;
+}
+
+.bug {
+    background-color: #A8B820;
+}
+
+.flying {
+    background-color: #89aae3;
+}
+
+.fairy {
+    background-color: #ec8fe6;
+}
+
+.poison {
+    background-color: #b567ce;
+}
+
+.ghost {
+    background-color: #655bbb;
+}
+
+.dragon {
+    background-color: #0b6dc3;
+}
+
+.steel {
+    background-color: #5a8ea2;
+}
+
+.normal {
+    background-color: #919aa2;
+}
+
+.card:hover {
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    z-index: 10;
+}
+
+.card .type {
+    margin-bottom: 10px;
+}
+
+.stats {
+    border-radius: 6px;
+    padding: 10px;
+    margin-top: 10px;
+    border: 2px solid #4CAF50;
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    transform: translateY(-10px);
+    transition: opacity 0.5s ease, max-height 0.5s ease, transform 0.5s ease;
+}
+
+.card:hover .stats {
+    opacity: 1;
+    max-height: 300px;
+    transform: translateY(0);
+}
