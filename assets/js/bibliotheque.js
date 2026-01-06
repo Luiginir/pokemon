@@ -4,6 +4,31 @@ window.addEventListener('DOMContentLoaded', function() {
     const sortBy = document.getElementById('sortBy');
     let allPokemonData = [];
     let frenchNames = {};
+    let pokemonByName = {}; // Map pour lier nom anglais -> données françaises
+    
+    // Mapping manuel des Mega évolutions vers leurs IDs PokeAPI
+    const megaMapping = {
+        'Sceptile': '10065',
+        'Blaziken': '10050',
+        'Swampert': '10064',
+        'Gardevoir': '10068',
+        'Sableye': '10066',
+        'Mawile': '10052',
+        'Aggron': '10053',
+        'Medicham': '10054',
+        'Manectric': '10055',
+        'Sharpedo': '10070',
+        'Camerupt': '10087',
+        'Altaria': '10067',
+        'Banette': '10056',
+        'Absol': '10057',
+        'Glalie': '10074',
+        'Salamence': '10089',
+        'Metagross': '10076',
+        'Latias': '10062',
+        'Latios': '10063',
+        'Rayquaza': '10079'
+    };
 
     // Charger les noms français
     Promise.all([
@@ -13,6 +38,14 @@ window.addEventListener('DOMContentLoaded', function() {
         .then(([pokemonData, frenchNamesData]) => {
             allPokemonData = pokemonData;
             frenchNames = frenchNamesData;
+            
+            // Créer un map pour lier le nom anglais aux données françaises
+            Object.entries(frenchNamesData).forEach(([dexNum, data]) => {
+                pokemonByName[data.name_en] = {
+                    ...data,
+                    dexNumber: dexNum
+                };
+            });
             // Trier par type principal dès le chargement
             const sortedData = [...pokemonData].sort((a, b) => a['Type 1'].localeCompare(b['Type 1']));
             displayPokemons(sortedData);
@@ -49,10 +82,20 @@ window.addEventListener('DOMContentLoaded', function() {
                 // Filtrer par nom
                 if (searchQuery) {
                     filteredData = filteredData.filter(pokemon => {
-                        const pokemonNumber = pokemon.Number + 251;
-                        const frenchName = frenchNames[pokemonNumber] ? frenchNames[pokemonNumber].name_fr : pokemon.Name;
+                        let baseName = pokemon.Name;
+                        let isMega = false;
+                        if (pokemon.Name.includes('Mega')) {
+                            baseName = pokemon.Name.split('Mega')[0];
+                            isMega = true;
+                        }
+                        const pokemonData = pokemonByName[baseName];
+                        let frenchName = pokemonData ? pokemonData.name_fr : baseName;
+                        if (isMega) {
+                            frenchName = 'Méga-' + frenchName;
+                        }
                         return pokemon.Name.toLowerCase().includes(searchQuery) || 
-                               frenchName.toLowerCase().includes(searchQuery);
+                               frenchName.toLowerCase().includes(searchQuery) ||
+                               (isMega && 'mega'.includes(searchQuery));
                     });
                 }
                 
@@ -62,8 +105,14 @@ window.addEventListener('DOMContentLoaded', function() {
                         case 'type':
                             return a['Type 1'].localeCompare(b['Type 1']);
                         case 'name':
-                            const nameA = frenchNames[a.Number + 251] ? frenchNames[a.Number + 251].name_fr : a.Name;
-                            const nameB = frenchNames[b.Number + 251] ? frenchNames[b.Number + 251].name_fr : b.Name;
+                            let baseNameA = a.Name.includes('Mega') ? a.Name.split('Mega')[0] : a.Name;
+                            let baseNameB = b.Name.includes('Mega') ? b.Name.split('Mega')[0] : b.Name;
+                            const dataA = pokemonByName[baseNameA];
+                            const dataB = pokemonByName[baseNameB];
+                            let nameA = dataA ? dataA.name_fr : baseNameA;
+                            let nameB = dataB ? dataB.name_fr : baseNameB;
+                            if (a.Name.includes('Mega')) nameA = 'Méga-' + nameA;
+                            if (b.Name.includes('Mega')) nameB = 'Méga-' + nameB;
                             return nameA.localeCompare(nameB);
                         case 'hp':
                             return b.HP - a.HP;
@@ -168,10 +217,31 @@ window.addEventListener('DOMContentLoaded', function() {
                             .replace('Normal', 'Normal');
 
             // Obtenir le nom français si disponible
-            // Le Number dans le JSON commence à 1, donc on calcule le numéro Pokédex (252 pour Treecko)
-            const pokemonNumber = pokemon.Number + 251; // Génération 3 commence au #252
-            const displayName = frenchNames[pokemonNumber] ? frenchNames[pokemonNumber].name_fr : pokemon.Name;
-            const imageUrl = frenchNames[pokemonNumber] ? frenchNames[pokemonNumber].image : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemonNumber}.png`;
+            // Gérer les Mega évolutions (ex: "SceptileMega Sceptile" -> "Sceptile")
+            let baseName = pokemon.Name;
+            let isMega = false;
+            if (pokemon.Name.includes('Mega')) {
+                // Extraire le nom de base (avant "Mega")
+                baseName = pokemon.Name.split('Mega')[0];
+                isMega = true;
+            }
+            
+            const pokemonData = pokemonByName[baseName];
+            const pokemonNumber = pokemonData ? pokemonData.dexNumber : (pokemon.Number + 251);
+            let displayName = pokemonData ? pokemonData.name_fr : baseName;
+            if (isMega) {
+                displayName = 'Méga-' + displayName;
+            }
+            
+            // Pour les Mega évolutions, utiliser l'image mega si disponible
+            let imageUrl;
+            if (isMega && pokemonData && megaMapping[baseName]) {
+                // Utiliser l'ID spécifique du Mega Pokemon depuis le mapping
+                const megaId = megaMapping[baseName];
+                imageUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${megaId}.png`;
+            } else {
+                imageUrl = pokemonData ? pokemonData.image : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemonNumber}.png`;
+            }
 
             card.innerHTML = `
                 <div class="card-header">
@@ -225,8 +295,8 @@ window.addEventListener('DOMContentLoaded', function() {
                 const centerY = rect.height / 2;
                 
                 // Calculer la rotation basée sur la position de la souris
-                const rotateX = ((y - centerY) / centerY) * 3; // Max 3deg 
-                const rotateY = ((x - centerX) / centerX) * -3; // Max 3deg 
+                const rotateX = ((y - centerY) / centerY) * 1; // Max 1deg 
+                const rotateY = ((x - centerX) / centerX) * -1; // Max 1deg 
                 
                 // Calculer la position du gradient de brillance
                 const percentX = (x / rect.width) * 100;
