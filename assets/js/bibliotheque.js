@@ -244,86 +244,28 @@ window.addEventListener('DOMContentLoaded', function() {
             }
 
             card.innerHTML = `
-                <div class="card-header">
-                    <p>#${pokemonNumber}</p>
-                    <p>${pokemon.HP} PV</p>
-                </div>
-                <div class="pokemon-image">
-                    <img src="${imageUrl}" alt="${displayName}" loading="lazy">
-                </div>
-                <h2>${displayName}</h2>
-                <p class="type">Type: ${types}</p>
-                <div class="stats">
-                    <p>PV: <b>${pokemon.HP}</b></p>
-                    <p>Attaque: <b>${pokemon.Attack}</b></p>
-                    <p>Défense: <b>${pokemon.Defense}</b></p>
+                <div class="card-inner">
+                    <div class="card-front">
+                        <p class="pokemon-id">#${pokemonNumber}</p>
+                        <div class="pokemon-image">
+                            <img src="${imageUrl}" alt="${displayName}" loading="lazy">
+                        </div>
+                        <h2>${displayName}</h2>
+                    </div>
+                    <div class="card-back">
+                        <h2>${displayName}</h2>
+                        <p class="type">Type: ${types}</p>
+                        <div class="stats">
+                            <p>PV: <b>${pokemon.HP}</b></p>
+                            <p>Attaque: <b>${pokemon.Attack}</b></p>
+                            <p>Défense: <b>${pokemon.Defense}</b></p>
+                        </div>
+                    </div>
                 </div>
             `;
-            
-            // Fonction pour afficher les stats de toutes les cartes sur la même ligne
-            card.addEventListener('mouseenter', function() {
-                const cards = gridContainer.querySelectorAll('.card');
-                const hoveredRect = this.getBoundingClientRect();
-                
-                // D'abord, retirer la classe show-stats de toutes les cartes qui ne sont pas sur la même ligne
-                cards.forEach(c => {
-                    const cRect = c.getBoundingClientRect();
-                    if (Math.abs(cRect.top - hoveredRect.top) >= 10) {
-                        c.classList.remove('show-stats');
-                        delete c.dataset.currentRow;
-                    }
-                });
-                
-                // Ensuite, ajouter la classe aux cartes de la même ligne
-                cards.forEach(c => {
-                    const cRect = c.getBoundingClientRect();
-                    // Vérifier si la carte est sur la même ligne (tolérance de ±10px)
-                    if (Math.abs(cRect.top - hoveredRect.top) < 10) {
-                        c.classList.add('show-stats');
-                        c.dataset.currentRow = hoveredRect.top;
-                    }
-                });
-            });
-            
-            // Ajouter l'effet de suivi de la souris
-            card.addEventListener('mousemove', (e) => {
-                const rect = card.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                
-                const centerX = rect.width / 2;
-                const centerY = rect.height / 2;
-                
-                // Calculer la rotation basée sur la position de la souris
-                const rotateX = ((y - centerY) / centerY) * 1; // Max 1deg 
-                const rotateY = ((x - centerX) / centerX) * -1; // Max 1deg 
-                
-                // Calculer la position du gradient de brillance
-                const percentX = (x / rect.width) * 100;
-                const percentY = (y / rect.height) * 100;
-                
-                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.05, 1.05, 1.05)`;
-                
-                // Mettre à jour le gradient de brillance
-                const beforeElement = window.getComputedStyle(card, '::before');
-                card.style.setProperty('--mouse-x', `${percentX}%`);
-                card.style.setProperty('--mouse-y', `${percentY}%`);
-            });
-            
-            card.addEventListener('mouseleave', () => {
-                card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
-            });
+
             
             gridContainer.appendChild(card);
         });
     }
-    
-    // Détecter quand on quitte complètement la grille pour masquer les stats (une seule fois, en dehors de la boucle)
-    gridContainer.addEventListener('mouseleave', function() {
-        const cards = gridContainer.querySelectorAll('.card');
-        cards.forEach(c => {
-            c.classList.remove('show-stats');
-            delete c.dataset.currentRow;
-        });
-    });
 });
