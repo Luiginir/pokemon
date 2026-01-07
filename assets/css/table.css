@@ -1,0 +1,172 @@
+body {
+    color: white;
+}
+
+h3 {
+    text-align: center;
+    margin-top: 10px;
+}
+
+h2 {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.deck {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    row-gap: 20px;
+    column-gap: 10px;
+    padding: 20px;
+}
+
+.pokemon-select {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 10px 0;
+    background-color: rgba(255, 255, 255, 0.2);
+    width: 200px;
+    padding: 20px;
+    border-radius: 16px;
+}
+
+select {
+    padding: 8px;
+    border-radius: 8px;
+    border: none;
+    font-size: 1rem;
+    width: 100%;
+}
+
+/* Heatmap Styles */
+.heatmap-section {
+    margin: 40px auto;
+    padding: 20px;
+    max-width: 95vw;
+    text-align: center;
+}
+
+.heatmap-section h2 {
+    margin-bottom: 10px;
+}
+
+.heatmap-section p {
+    margin-bottom: 20px;
+    opacity: 0.8;
+}
+
+.heatmap-container {
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: 80vh;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 10px;
+}
+
+#heatmap-table {
+    border-collapse: collapse;
+    font-size: 10px;
+    margin: 0 auto;
+}
+
+#heatmap-table th,
+#heatmap-table td {
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 2px;
+    text-align: center;
+    min-width: 28px;
+    max-width: 28px;
+    height: 28px;
+}
+
+#heatmap-table .corner-cell {
+    background: rgba(0, 0, 0, 0.7);
+    position: sticky;
+    top: 0;
+    left: 0;
+    z-index: 3;
+    font-size: 9px;
+    min-width: 100px;
+    padding: 5px;
+}
+
+#heatmap-table .header-cell {
+    background: rgba(0, 0, 0, 0.5);
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    height: 80px;
+    vertical-align: bottom;
+    padding-bottom: 5px;
+}
+
+#heatmap-table .pokemon-name-vertical {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    transform: rotate(180deg);
+    white-space: nowrap;
+    font-size: 9px;
+    max-height: 75px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#heatmap-table .row-header {
+    background: rgba(0, 0, 0, 0.5);
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    text-align: right;
+    padding-right: 5px;
+    font-size: 9px;
+    white-space: nowrap;
+    max-width: 100px;
+    min-width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#heatmap-table .data-cell {
+    font-weight: bold;
+    font-size: 8px;
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+
+#heatmap-table .data-cell:hover {
+    transform: scale(1.5);
+    z-index: 10;
+    position: relative;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+#heatmap-table .diagonal-cell {
+    background: #333 !important;
+    color: #666;
+}
+
+/* Legend */
+.heatmap-legend {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.legend-gradient {
+    width: 200px;
+    height: 20px;
+    background: linear-gradient(to right, rgb(255, 0, 0), rgb(255, 255, 0), rgb(0, 255, 0));
+    border-radius: 4px;
+}
+
+.legend-label {
+    font-size: 12px;
+    font-weight: bold;
+}
