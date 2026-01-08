@@ -664,34 +664,63 @@ function initMultiplayer() {
     });
 }
 
+// Configuration PeerJS
+const peerConfig = {
+    debug: 2,
+    config: {
+        iceServers: [
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'stun:stun1.l.google.com:19302' },
+            { urls: 'stun:stun2.l.google.com:19302' }
+        ]
+    }
+};
+
 // Créer une partie (hôte)
 function createGame() {
     isHost = true;
     isMultiplayer = true;
     
     // Générer un ID aléatoire pour la partie
-    gameId = 'pokemon-' + Math.random().toString(36).substring(2, 8);
+    gameId = 'pkmn' + Math.random().toString(36).substring(2, 10);
     
-    // Créer le peer
-    peer = new Peer(gameId);
+    showStatus('Création de la partie...', false);
+    
+    // Créer le peer avec configuration
+    peer = new Peer(gameId, peerConfig);
     
     peer.on('open', (id) => {
         console.log('Partie créée avec ID:', id);
         const shareLink = document.getElementById('shareLink');
-        const gameUrl = `${window.location.origin}${window.location.pathname}?join=${id}`;
+        
+        // Utiliser l'URL actuelle comme base
+        const currentUrl = window.location.href.split('?')[0];
+        const gameUrl = `${currentUrl}?join=${id}`;
         shareLink.value = gameUrl;
         
-        showStatus('En attente d\'un adversaire...', false);
+        // Afficher aussi juste le code
+        showStatus(`✅ Partie prête ! Code: ${id}`, false);
     });
     
     peer.on('connection', (connection) => {
+        console.log('Un joueur se connecte...');
         conn = connection;
         setupConnection();
     });
     
     peer.on('error', (err) => {
         console.error('Erreur Peer:', err);
-        showStatus('Erreur de connexion: ' + err.type, true);
+        if (err.type === 'unavailable-id') {
+            showStatus('Ce code existe déjà, réessayez...', true);
+            setTimeout(createGame, 1000);
+        } else {
+            showStatus('Erreur: ' + err.type + '. Vérifiez votre connexion internet.', true);
+        }
+    });
+    
+    peer.on('disconnected', () => {
+        console.log('Déconnecté du serveur, reconnexion...');
+        peer.reconnect();
     });
 }
 
@@ -700,46 +729,84 @@ function joinGame(hostId) {
     isHost = false;
     isMultiplayer = true;
     
+    // Nettoyer l'ID (enlever les espaces, etc.)
+    hostId = hostId.trim();
+    
     showStatus('Connexion en cours...', false);
     
-    // Créer le peer
-    peer = new Peer();
+    // Créer le peer avec configuration
+    peer = new Peer(peerConfig);
     
-    peer.on('open', () => {
+    peer.on('open', (myId) => {
+        console.log('Mon ID:', myId);
         console.log('Connexion à la partie:', hostId);
-        conn = peer.connect(hostId);
-        setupConnection();
+        
+        showStatus('Connexion à l\'hôte...', false);
+        
+        // Se connecter à l'hôte
+        conn = peer.connect(hostId, {
+            reliable: true
+        });
+        
+        // Timeout si la connexion échoue
+        const connectionTimeout = setTimeout(() => {
+            if (!conn || !conn.open) {
+                showStatus('⏱️ Timeout - L\'hôte ne répond pas. Vérifiez le code.', true);
+            }
+        }, 10000);
+        
+        conn.on('open', () => {
+            clearTimeout(connectionTimeout);
+            console.log('Connexion établie !');
+            showStatus('✅ Connecté ! Préparation du jeu...', false);
+        });
+        
+        conn.on('data', (data) => {
+            handleMessage(data);
+        });
+        
+        conn.on('close', () => {
+            showStatus('L\'hôte s\'est déconnecté', true);
+        });
+        
+        conn.on('error', (err) => {
+            clearTimeout(connectionTimeout);
+            console.error('Erreur de connexion:', err);
+            showStatus('Erreur de connexion à l\'hôte', true);
+        });
     });
     
     peer.on('error', (err) => {
         console.error('Erreur Peer:', err);
-        showStatus('Erreur de connexion: ' + err.type, true);
+        if (err.type === 'peer-unavailable') {
+            showStatus('❌ Partie introuvable. Vérifiez que l\'hôte est toujours connecté et que le code est correct.', true);
+        } else {
+            showStatus('Erreur: ' + err.type, true);
+        }
     });
 }
 
-// Configurer la connexion
+// Configurer la connexion (utilisé par l'hôte)
 function setupConnection() {
     conn.on('open', () => {
-        console.log('Connexion établie !');
-        showStatus('Connexion réussie ! Préparation du jeu...', false);
+        console.log('Connexion établie avec un joueur !');
+        showStatus('✅ Joueur connecté ! Lancement du jeu...', false);
         
         // L'hôte envoie les données du jeu
-        if (isHost) {
-            setTimeout(() => {
-                // Générer les decks
-                playerDeck = getRandomPokemons(9);
-                botDeck = getRandomPokemons(9);
-                
-                // Envoyer les decks à l'adversaire (inversés pour lui)
-                sendMessage({
-                    type: 'init',
-                    hostDeck: playerDeck,
-                    guestDeck: botDeck
-                });
-                
-                startMultiplayerGame();
-            }, 500);
-        }
+        setTimeout(() => {
+            // Générer les decks
+            playerDeck = getRandomPokemons(9);
+            botDeck = getRandomPokemons(9);
+            
+            // Envoyer les decks à l'adversaire (inversés pour lui)
+            sendMessage({
+                type: 'init',
+                hostDeck: playerDeck,
+                guestDeck: botDeck
+            });
+            
+            startMultiplayerGame();
+        }, 500);
     });
     
     conn.on('data', (data) => {
