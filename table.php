@@ -11,6 +11,8 @@ error_reporting(E_ALL);
     <title>Simulation</title>
     <link rel="stylesheet" href="assets/css/styles.css">
     <link rel="stylesheet" href="assets/css/table.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="assets/js/table.js" defer></script>
 </head>
 
@@ -18,7 +20,12 @@ error_reporting(E_ALL);
     <h1>Simulation de combat</h1>
     <h3>Simulez votre combat Pokémon et voyez quelle est la meilleure combinaison</h3>
     <div class="select">
-        <h2>Equipe 1</h2>
+        <div class="team-header">
+            <h2>Equipe 1</h2>
+            <button class="shuffle-btn" id="shuffle-team1" title="Mélanger l'équipe 1">
+                <i class="fas fa-random"></i> Aléatoire
+            </button>
+        </div>
         <div class="deck">
             <?php
             $json_file = 'assets/data/pokemons.json';
@@ -41,7 +48,12 @@ error_reporting(E_ALL);
             }
             ?>
         </div>
-        <h2>Equipe 2</h2>
+        <div class="team-header">
+            <h2>Equipe 2</h2>
+            <button class="shuffle-btn" id="shuffle-team2" title="Mélanger l'équipe 2">
+                <i class="fas fa-random"></i> Aléatoire
+            </button>
+        </div>
         <div class="deck">
             <?php
             for ($i = 10; $i <= 18; $i++) {
@@ -65,10 +77,16 @@ error_reporting(E_ALL);
     <div class="heatmap-section">
         <h2>Tableau de Comparaison (Heatmap)</h2>
         <p>Probabilité de victoire du Pokémon en ligne contre le Pokémon en colonne</p>
-        <div class="heatmap-container">
-            <table id="heatmap-table">
-                <!-- JS -->
-            </table>
+        <div class="analysis-container">
+            <div class="heatmap-container">
+                <table id="heatmap-table">
+                    <!-- JS -->
+                </table>
+            </div>
+            <div class="chart-container">
+                <h3>Statistiques de Victoires</h3>
+                <canvas id="winRateChart"></canvas>
+            </div>
         </div>
         <div class="heatmap-legend">
             <span class="legend-label">0%</span>

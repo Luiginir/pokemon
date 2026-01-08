@@ -2,6 +2,7 @@ window.addEventListener('DOMContentLoaded', function() {
     let allPokemonData = [];
     let frenchNames = {};
     let pokemonByName = {};
+    let winRateChart = null;
     
     // Mapping manuel des Mega évolutions vers leurs IDs PokeAPI
     const megaMapping = {
@@ -62,6 +63,7 @@ window.addEventListener('DOMContentLoaded', function() {
             // Générer le heatmap initial
             generateHeatmap();
             addRandomButton();
+            generateWinRateChart();
         })
         .catch(error => console.error('Error loading Pokémon data:', error));
 
@@ -183,7 +185,21 @@ window.addEventListener('DOMContentLoaded', function() {
         team2.forEach(pokemon => {
             const th = document.createElement('th');
             th.className = 'header-cell';
-            th.innerHTML = `<span class="pokemon-name-vertical">${getFrenchName(pokemon)}</span>`;
+            
+            const headerContent = document.createElement('div');
+            headerContent.className = 'header-content';
+            
+            const img = document.createElement('img');
+            img.src = getPokemonImage(pokemon);
+            img.alt = getFrenchName(pokemon);
+            
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'pokemon-name-vertical';
+            nameSpan.textContent = getFrenchName(pokemon);
+            
+            headerContent.appendChild(img);
+            headerContent.appendChild(nameSpan);
+            th.appendChild(headerContent);
             th.title = getFrenchName(pokemon);
             headerRow.appendChild(th);
         });
@@ -196,7 +212,20 @@ window.addEventListener('DOMContentLoaded', function() {
             // En-tête de ligne (nom du Pokemon de l'équipe 1)
             const rowHeader = document.createElement('th');
             rowHeader.className = 'row-header';
-            rowHeader.textContent = getFrenchName(pokemon1);
+            
+            const rowContent = document.createElement('div');
+            rowContent.className = 'row-content';
+            
+            const nameSpan = document.createElement('span');
+            nameSpan.textContent = getFrenchName(pokemon1);
+            
+            const img = document.createElement('img');
+            img.src = getPokemonImage(pokemon1);
+            img.alt = getFrenchName(pokemon1);
+            
+            rowContent.appendChild(nameSpan);
+            rowContent.appendChild(img);
+            rowHeader.appendChild(rowContent);
             rowHeader.title = getFrenchName(pokemon1);
             row.appendChild(rowHeader);
             
@@ -254,21 +283,23 @@ window.addEventListener('DOMContentLoaded', function() {
         return teamPokemons;
     }
     
-    // Ajout bouton de sélection aléatoire
+    // Ajout boutons de sélection aléatoire
     function addRandomButton() {
-        const selectDiv = document.querySelector('.select');
-        if (!selectDiv || document.getElementById('random-teams-btn')) return;
-        const btn = document.createElement('button');
-        btn.id = 'random-teams-btn';
-        btn.textContent = 'Sélection aléatoire';
-        btn.style.margin = '20px auto 10px auto';
-        btn.style.display = 'block';
-        btn.onclick = () => randomizeTeams();
-        selectDiv.insertBefore(btn, selectDiv.firstChild);
+        // Attacher les événements aux boutons existants dans le HTML
+        const btn1 = document.getElementById('shuffle-team1');
+        const btn2 = document.getElementById('shuffle-team2');
+        
+        if (btn1) {
+            btn1.onclick = () => randomizeTeam(1, 9);
+        }
+        if (btn2) {
+            btn2.onclick = () => randomizeTeam(10, 18);
+        }
     }
 
-    function randomizeTeams() {
+    function randomizeTeam(startIndex, endIndex) {
         if (!allPokemonData.length) return;
+        
         // Shuffle helper
         function shuffle(arr) {
             for (let i = arr.length - 1; i > 0; i--) {
@@ -277,22 +308,15 @@ window.addEventListener('DOMContentLoaded', function() {
             }
             return arr;
         }
+        
         const shuffled = shuffle([...allPokemonData]);
-        // Team 1
-        for (let i = 1; i <= 9; i++) {
+        const teamSize = endIndex - startIndex + 1;
+        
+        // Remplir l'équipe avec des Pokémon aléatoires
+        for (let i = startIndex; i <= endIndex; i++) {
             const select = document.getElementById('pokemon' + i);
             if (select) {
-                const poke = shuffled[i - 1];
-                const pokeId = poke['#'] !== undefined ? poke['#'] : allPokemonData.indexOf(poke);
-                select.value = pokeId;
-                select.dispatchEvent(new Event('change'));
-            }
-        }
-        // Team 2
-        for (let i = 10; i <= 18; i++) {
-            const select = document.getElementById('pokemon' + i);
-            if (select) {
-                const poke = shuffled[i - 1 + 9];
+                const poke = shuffled[i - startIndex];
                 const pokeId = poke['#'] !== undefined ? poke['#'] : allPokemonData.indexOf(poke);
                 select.value = pokeId;
                 select.dispatchEvent(new Event('change'));
@@ -312,7 +336,7 @@ window.addEventListener('DOMContentLoaded', function() {
             card.style.zIndex = '9999';
             card.style.minWidth = '220px';
             card.style.maxWidth = '320px';
-            card.style.background = 'rgba(30,30,30,0.98)';
+            card.style.background = 'rgba(30,30,30,0.95)';
             card.style.border = '2px solid #fff';
             card.style.borderRadius = '12px';
             card.style.boxShadow = '0 4px 24px #0008';
@@ -320,6 +344,7 @@ window.addEventListener('DOMContentLoaded', function() {
             card.style.color = '#fff';
             card.style.fontSize = '13px';
             card.style.transition = 'opacity 0.1s';
+            card.style.backdropFilter = 'blur(8px)';
             document.body.appendChild(card);
         }
         return card;
@@ -424,5 +449,157 @@ window.addEventListener('DOMContentLoaded', function() {
     generateHeatmap = function() {
         oldGenerateHeatmap.apply(this, arguments);
         addHeatmapHoverListeners();
+        generateWinRateChart();
     };
+    
+    // Fonction pour calculer les statistiques de victoire
+    function calculateWinStatistics() {
+        const team1 = getTeamPokemons(1, 9);
+        const team2 = getTeamPokemons(10, 18);
+        
+        if (team1.length === 0 || team2.length === 0) {
+            return [];
+        }
+        
+        const winStats = new Map();
+        
+        // Initialiser les stats pour tous les pokémons
+        [...team1, ...team2].forEach(pokemon => {
+            const name = getFrenchName(pokemon);
+            if (!winStats.has(name)) {
+                winStats.set(name, { 
+                    pokemon: pokemon, 
+                    wins: 0, 
+                    total: 0,
+                    winRate: 0
+                });
+            }
+        });
+        
+        // Calculer les victoires pour l'équipe 1 contre l'équipe 2
+        team1.forEach(pokemon1 => {
+            const name1 = getFrenchName(pokemon1);
+            team2.forEach(pokemon2 => {
+                const probability = calculateWinProbability(pokemon1, pokemon2);
+                const stats1 = winStats.get(name1);
+                stats1.total++;
+                if (probability > 50) {
+                    stats1.wins++;
+                }
+            });
+        });
+        
+        // Calculer les victoires pour l'équipe 2 contre l'équipe 1
+        team2.forEach(pokemon2 => {
+            const name2 = getFrenchName(pokemon2);
+            team1.forEach(pokemon1 => {
+                const probability = calculateWinProbability(pokemon2, pokemon1);
+                const stats2 = winStats.get(name2);
+                stats2.total++;
+                if (probability > 50) {
+                    stats2.wins++;
+                }
+            });
+        });
+        
+        // Calculer le taux de victoire
+        winStats.forEach((stats, name) => {
+            stats.winRate = stats.total > 0 ? (stats.wins / stats.total) * 100 : 0;
+        });
+        
+        // Convertir en array et trier par nombre de victoires
+        const statsArray = Array.from(winStats.values());
+        statsArray.sort((a, b) => b.wins - a.wins);
+        
+        return statsArray;
+    }
+    
+    // Fonction pour générer des couleurs pour tous les pokémons
+    function generateColors(count) {
+        const colors = [];
+        const borderColors = [];
+        for (let i = 0; i < count; i++) {
+            const hue = (i * 360 / count) % 360;
+            colors.push(`hsla(${hue}, 70%, 60%, 0.8)`);
+            borderColors.push(`hsla(${hue}, 70%, 60%, 1)`);
+        }
+        return { colors, borderColors };
+    }
+    
+    // Fonction pour générer le diagramme camembert
+    function generateWinRateChart() {
+        const canvas = document.getElementById('winRateChart');
+        if (!canvas) return;
+        
+        const stats = calculateWinStatistics();
+        
+        if (stats.length === 0) {
+            // Si pas de données, afficher un message
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.font = '14px Arial';
+            ctx.fillStyle = 'white';
+            ctx.textAlign = 'center';
+            ctx.fillText('Sélectionnez des Pokémon', canvas.width / 2, canvas.height / 2);
+            return;
+        }
+        
+        // Prendre tous les pokémons
+        const topStats = stats;
+        
+        // Générer des couleurs pour tous les pokémons
+        const { colors, borderColors } = generateColors(topStats.length);
+        
+        const data = {
+            labels: topStats.map(s => getFrenchName(s.pokemon)),
+            datasets: [{
+                label: 'Nombre de victoires',
+                data: topStats.map(s => s.wins),
+                backgroundColor: colors,
+                borderColor: borderColors,
+                borderWidth: 2
+            }]
+        };
+        
+        const config = {
+            type: 'pie',
+            data: data,
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            color: 'white',
+                            font: {
+                                size: 11
+                            },
+                            padding: 8
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const stat = topStats[context.dataIndex];
+                                return [
+                                    `${context.label}`,
+                                    `Victoires: ${stat.wins}/${stat.total}`,
+                                    `Taux: ${stat.winRate.toFixed(1)}%`
+                                ];
+                            }
+                        }
+                    }
+                }
+            }
+        };
+        
+        // Détruire le graphique existant s'il existe
+        if (winRateChart) {
+            winRateChart.destroy();
+        }
+        
+        // Créer le nouveau graphique
+        winRateChart = new Chart(canvas, config);
+    }
 });
