@@ -513,35 +513,55 @@ function animateBattle(result, callback) {
     function animateTurn() {
         if (currentTurn >= Math.min(result.turns, 5)) { // Afficher max 5 tours d'animation
             // Mettre à jour les barres de vie avec les HP finaux
-            updateHealthBar('player', result.finalHP.hp1, playerMaxHP);
-            updateHealthBar('bot', result.finalHP.hp2, botMaxHP);
+            // Pour l'invité, les HP sont inversés (hp1 = adversaire, hp2 = moi)
+            if (isMultiplayer && !isHost) {
+                updateHealthBar('player', result.finalHP.hp2, playerMaxHP);
+                updateHealthBar('bot', result.finalHP.hp1, botMaxHP);
+            } else {
+                updateHealthBar('player', result.finalHP.hp1, playerMaxHP);
+                updateHealthBar('bot', result.finalHP.hp2, botMaxHP);
+            }
             callback();
             return;
         }
         
         const turnData = result.log[currentTurn];
         
+        // Pour l'invité en multijoueur, inverser les dégâts et HP
+        let myHP, opponentHP, myDamage, opponentDamage;
+        if (isMultiplayer && !isHost) {
+            myHP = turnData.hp2;
+            opponentHP = turnData.hp1;
+            myDamage = turnData.damage2;
+            opponentDamage = turnData.damage1;
+        } else {
+            myHP = turnData.hp1;
+            opponentHP = turnData.hp2;
+            myDamage = turnData.damage1;
+            opponentDamage = turnData.damage2;
+        }
+        
         // Animation d'attaque du joueur
-        if (botCardElement && turnData.damage1 > 0) {
+        if (botCardElement && myDamage > 0) {
             playerCardElement?.classList.add('attacking');
             setTimeout(() => {
                 playerCardElement?.classList.remove('attacking');
                 botCardElement.classList.add('damaged');
                 // Mettre à jour la barre de vie du bot
-                updateHealthBar('bot', turnData.hp2, botMaxHP);
+                updateHealthBar('bot', opponentHP, botMaxHP);
                 setTimeout(() => botCardElement.classList.remove('damaged'), 400);
             }, 250);
         }
         
         // Animation d'attaque du bot
         setTimeout(() => {
-            if (playerCardElement && turnData.damage2 > 0) {
+            if (playerCardElement && opponentDamage > 0) {
                 botCardElement?.classList.add('attacking');
                 setTimeout(() => {
                     botCardElement?.classList.remove('attacking');
                     playerCardElement.classList.add('damaged');
                     // Mettre à jour la barre de vie du joueur
-                    updateHealthBar('player', turnData.hp1, playerMaxHP);
+                    updateHealthBar('player', myHP, playerMaxHP);
                     setTimeout(() => playerCardElement.classList.remove('damaged'), 400);
                 }, 250);
             }
@@ -1028,15 +1048,17 @@ function handleBattleResult(result) {
             message = `🎉 ${playerName} a gagné !`;
             if (botCardElement) botCardElement.classList.add('defeat');
             if (playerCardElement) playerCardElement.classList.add('victory');
-            botDeck[opponentSelectedCardIndex] = null;
         } else if (opponentWon) {
             message = `😢 ${botName} a gagné...`;
             if (playerCardElement) playerCardElement.classList.add('defeat');
             if (botCardElement) botCardElement.classList.add('victory');
-            playerDeck[mySelectedCardIndex] = null;
         } else {
             message = `Match nul !`;
         }
+        
+        // Retirer les deux cartes jouées (les cartes ne sont jamais récupérées)
+        playerDeck[mySelectedCardIndex] = null;
+        botDeck[opponentSelectedCardIndex] = null;
         
         const battleInfo = document.getElementById('battleInfo');
         if (battleInfo) battleInfo.style.display = 'block';
