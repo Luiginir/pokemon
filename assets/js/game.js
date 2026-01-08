@@ -23,6 +23,7 @@ let gameId = null;
 let opponentReady = false;
 let mySelectedCardIndex = null;
 let opponentSelectedCardIndex = null;
+let opponentHasSelected = false; // Savoir si l'adversaire a choisi sans voir sa carte
 
 // Mapping manuel des Mega évolutions vers leurs IDs PokeAPI
 const megaMapping = {
@@ -352,12 +353,14 @@ function displayDeck(deck, elementId, isPlayer) {
     // Ajouter les événements de clic pour le joueur
     if (isPlayer) {
         const cards = deckElement.querySelectorAll('.card');
-        cards.forEach((card, index) => {
+        cards.forEach((card) => {
+            // Récupérer l'index réel depuis data-index de la carte
+            const realIndex = parseInt(card.getAttribute('data-index'));
             card.addEventListener('click', () => {
                 if (isMultiplayer) {
-                    selectPlayerCardMultiplayer(index);
+                    selectPlayerCardMultiplayer(realIndex);
                 } else {
-                    selectPlayerCard(index);
+                    selectPlayerCard(realIndex);
                 }
             });
         });
@@ -378,9 +381,10 @@ function selectPlayerCard(index) {
     const playerHealthBar = document.getElementById('playerHealthBar');
     playerHealthBar.innerHTML = createHealthBar('player');
     
-    // Désactiver la carte dans le deck
+    // Désactiver la carte dans le deck (trouver par data-index)
     const playerDeckElement = document.getElementById('playerDeck');
-    playerDeckElement.querySelectorAll('.card')[index].classList.add('disabled');
+    const cardToDisable = playerDeckElement.querySelector(`.card[data-index="${index}"]`);
+    if (cardToDisable) cardToDisable.classList.add('disabled');
     
     updateGameInfo("Sélection du Pokémon adverse...");
     
@@ -839,23 +843,21 @@ function handleMessage(data) {
             break;
             
         case 'selectCard':
-            // L'adversaire a sélectionné une carte
+            // L'adversaire a sélectionné une carte (mais on ne la voit pas encore)
             opponentSelectedCardIndex = data.index;
+            opponentHasSelected = true;
             selectedBotCard = botDeck[data.index];
             
-            // Afficher la carte de l'adversaire
-            const botCardSlot = document.getElementById('botCard');
-            botCardSlot.innerHTML = createCardHTML(selectedBotCard, data.index);
-            
-            const botHealthBar = document.getElementById('botHealthBar');
-            botHealthBar.innerHTML = createHealthBar('bot');
-            
-            // Si les deux joueurs ont sélectionné, lancer le combat
+            // Si les deux joueurs ont sélectionné, révéler et lancer le combat
             if (mySelectedCardIndex !== null) {
+                revealOpponentCard();
                 updateGameInfo("Combat en cours...");
                 setTimeout(() => executeMultiplayerBattle(), 1000);
             } else {
-                updateGameInfo("En attente de votre sélection...");
+                // Indiquer que l'adversaire attend sans montrer sa carte
+                const botCardSlot = document.getElementById('botCard');
+                botCardSlot.innerHTML = '<p>✅ Adversaire prêt !</p>';
+                updateGameInfo("L'adversaire a choisi. À votre tour !");
             }
             break;
             
@@ -906,6 +908,7 @@ function startMultiplayerGame() {
     // Réinitialiser les sélections
     mySelectedCardIndex = null;
     opponentSelectedCardIndex = null;
+    opponentHasSelected = false;
 }
 
 // Sélectionner une carte en multijoueur
@@ -922,9 +925,10 @@ function selectPlayerCardMultiplayer(index) {
     const playerHealthBar = document.getElementById('playerHealthBar');
     playerHealthBar.innerHTML = createHealthBar('player');
     
-    // Désactiver la carte dans le deck
+    // Désactiver la carte dans le deck (trouver par data-index)
     const playerDeckElement = document.getElementById('playerDeck');
-    playerDeckElement.querySelectorAll('.card')[index].classList.add('disabled');
+    const cardToDisable = playerDeckElement.querySelector(`.card[data-index="${index}"]`);
+    if (cardToDisable) cardToDisable.classList.add('disabled');
     
     // Envoyer la sélection à l'adversaire
     sendMessage({
@@ -932,13 +936,23 @@ function selectPlayerCardMultiplayer(index) {
         index: index
     });
     
-    // Si l'adversaire a déjà sélectionné, lancer le combat
-    if (opponentSelectedCardIndex !== null) {
+    // Si l'adversaire a déjà sélectionné, révéler sa carte et lancer le combat
+    if (opponentHasSelected) {
+        revealOpponentCard();
         updateGameInfo("Combat en cours...");
         setTimeout(() => executeMultiplayerBattle(), 1000);
     } else {
         updateGameInfo("En attente de l'adversaire...");
     }
+}
+
+// Révéler la carte de l'adversaire
+function revealOpponentCard() {
+    const botCardSlot = document.getElementById('botCard');
+    botCardSlot.innerHTML = createCardHTML(selectedBotCard, opponentSelectedCardIndex);
+    
+    const botHealthBar = document.getElementById('botHealthBar');
+    botHealthBar.innerHTML = createHealthBar('bot');
 }
 
 // Exécuter le combat en multijoueur
@@ -999,12 +1013,23 @@ function handleBattleResult(result) {
         if (botIsMega) botName = 'Méga-' + botName;
         
         let message = '';
-        if (result.winner === 'player1') {
+        // Pour l'hôte: player1 = lui, player2 = adversaire
+        // Pour l'invité: player1 = adversaire (hôte), player2 = lui
+        let iWon, opponentWon;
+        if (isHost) {
+            iWon = result.winner === 'player1';
+            opponentWon = result.winner === 'player2';
+        } else {
+            iWon = result.winner === 'player2';
+            opponentWon = result.winner === 'player1';
+        }
+        
+        if (iWon) {
             message = `🎉 ${playerName} a gagné !`;
             if (botCardElement) botCardElement.classList.add('defeat');
             if (playerCardElement) playerCardElement.classList.add('victory');
             botDeck[opponentSelectedCardIndex] = null;
-        } else if (result.winner === 'player2') {
+        } else if (opponentWon) {
             message = `😢 ${botName} a gagné...`;
             if (playerCardElement) playerCardElement.classList.add('defeat');
             if (botCardElement) botCardElement.classList.add('victory');
@@ -1043,6 +1068,7 @@ function checkMultiplayerGameEnd() {
     selectedBotCard = null;
     mySelectedCardIndex = null;
     opponentSelectedCardIndex = null;
+    opponentHasSelected = false;
     
     document.getElementById('playerCard').innerHTML = '<p>Choisissez votre Pokémon</p>';
     document.getElementById('botCard').innerHTML = '<p>En attente...</p>';
