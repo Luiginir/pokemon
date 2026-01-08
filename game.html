@@ -6,9 +6,58 @@
     <link rel="stylesheet" href="./assets/css/styles.css">
     <link rel="stylesheet" href="./assets/css/bibliotheque.css">
     <link rel="stylesheet" href="./assets/css/game.css">
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <title>Arène Pokémon</title>
 </head>
 <body>
+    <!-- Modal de connexion multijoueur -->
+    <div id="multiplayerModal" class="modal">
+        <div class="modal-content">
+            <h2>🎮 Mode de jeu</h2>
+            <div class="game-mode-buttons">
+                <button id="soloBtn" class="mode-btn">
+                    <span class="mode-icon">🤖</span>
+                    <span class="mode-title">Solo vs Bot</span>
+                    <span class="mode-desc">Affrontez l'ordinateur</span>
+                </button>
+                <button id="hostBtn" class="mode-btn">
+                    <span class="mode-icon">🏠</span>
+                    <span class="mode-title">Créer une partie</span>
+                    <span class="mode-desc">Invitez un ami</span>
+                </button>
+                <button id="joinBtn" class="mode-btn">
+                    <span class="mode-icon">🔗</span>
+                    <span class="mode-title">Rejoindre</span>
+                    <span class="mode-desc">Rejoignez une partie</span>
+                </button>
+            </div>
+            
+            <!-- Section Hébergement -->
+            <div id="hostSection" class="connection-section hidden">
+                <h3>Partagez ce lien avec votre ami :</h3>
+                <div class="link-container">
+                    <input type="text" id="shareLink" readonly>
+                    <button id="copyLinkBtn">📋 Copier</button>
+                </div>
+                <p class="waiting-text">⏳ En attente d'un adversaire...</p>
+            </div>
+            
+            <!-- Section Rejoindre -->
+            <div id="joinSection" class="connection-section hidden">
+                <h3>Entrez le code de la partie :</h3>
+                <div class="join-container">
+                    <input type="text" id="gameCode" placeholder="Code de la partie">
+                    <button id="connectBtn">Rejoindre</button>
+                </div>
+            </div>
+            
+            <!-- Statut de connexion -->
+            <div id="connectionStatus" class="connection-status hidden">
+                <p id="statusText">Connexion en cours...</p>
+            </div>
+        </div>
+    </div>
+
     <header>
         <nav>
             <ul>
