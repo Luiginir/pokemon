@@ -9,9 +9,34 @@ let playerDeck = [];
 let botDeck = [];
 let allPokemons = [];
 let pokemonsFrench = {};
+let pokemonByName = {}; // Map pour lier nom anglais -> données françaises
 let selectedPlayerCard = null;
 let selectedBotCard = null;
 let isPlayerTurn = true;
+
+// Mapping manuel des Mega évolutions vers leurs IDs PokeAPI
+const megaMapping = {
+    'Sceptile': '10065',
+    'Blaziken': '10050',
+    'Swampert': '10064',
+    'Gardevoir': '10068',
+    'Sableye': '10066',
+    'Mawile': '10052',
+    'Aggron': '10053',
+    'Medicham': '10054',
+    'Manectric': '10055',
+    'Sharpedo': '10070',
+    'Camerupt': '10087',
+    'Altaria': '10067',
+    'Banette': '10056',
+    'Absol': '10057',
+    'Glalie': '10074',
+    'Salamence': '10089',
+    'Metagross': '10076',
+    'Latias': '10062',
+    'Latios': '10063',
+    'Rayquaza': '10079'
+};
 
 // Fonction pour calculer les HP totaux (PV uniquement, la défense sert maintenant à réduire les dégâts)
 function calculateTotalHP(pokemon) {
@@ -61,8 +86,8 @@ function startBattle(pokemon1, pokemon2) {
     console.log(`Probabilité de victoire - Joueur 1: ${probabilities.prob1}% | Joueur 2: ${probabilities.prob2}%`);
     console.log(`HP initiaux - ${pokemon1.Name}: ${hp1} | ${pokemon2.Name}: ${hp2}`);
     
-    // Boucle de combat (maximum 50 tours pour éviter une boucle infinie)
-    let maxTurns = 50;
+    // Boucle de combat (maximum 15 tours pour éviter une boucle infinie)
+    let maxTurns = 15;
     let turn = 0;
     let winner = null;
     
@@ -153,17 +178,72 @@ const typeNames = {
     steel: 'Acier', fairy: 'Fée'
 };
 
+// Fonction pour créer une barre de vie
+function createHealthBar(owner) {
+    const maxHP = owner === 'player' ? calculateTotalHP(selectedPlayerCard) : calculateTotalHP(selectedBotCard);
+    return `
+        <div class="health-bar-container" data-owner="${owner}">
+            <div class="health-bar-bg">
+                <div class="health-bar-fill" data-max-hp="${maxHP}" style="width: 100%;"></div>
+            </div>
+            <div class="health-bar-text">
+                <span class="current-hp">${maxHP}</span> / <span class="max-hp">${maxHP}</span> PV
+            </div>
+        </div>
+    `;
+}
+
+// Fonction pour mettre à jour la barre de vie
+function updateHealthBar(owner, currentHP, maxHP) {
+    const container = document.querySelector(`.health-bar-container[data-owner="${owner}"]`);
+    if (!container) return;
+    
+    const fillBar = container.querySelector('.health-bar-fill');
+    const currentHPText = container.querySelector('.current-hp');
+    
+    const percentage = Math.max(0, (currentHP / maxHP) * 100);
+    fillBar.style.width = percentage + '%';
+    currentHPText.textContent = Math.max(0, currentHP);
+    
+    // Changer la couleur en fonction des HP
+    if (percentage > 50) {
+        fillBar.style.backgroundColor = '#4CAF50';
+    } else if (percentage > 25) {
+        fillBar.style.backgroundColor = '#FFA726';
+    } else {
+        fillBar.style.backgroundColor = '#EF5350';
+    }
+}
+
 // Fonction pour générer le HTML d'une carte
 function createCardHTML(pokemon, index) {
     const primaryType = pokemon['Type 1'].toLowerCase();
     const hasSecondType = pokemon['Type 2'] && pokemon['Type 2'].trim() !== '';
     const secondaryType = hasSecondType ? pokemon['Type 2'].toLowerCase() : null;
     
-    // Calculer l'ID national (Number + 251 pour la gen 3)
-    const nationalId = pokemon.Number + 251;
-    const frenchData = pokemonsFrench[nationalId] || {};
-    const pokemonName = frenchData.name_fr || pokemon.Name;
-    const pokemonImage = frenchData.image || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${nationalId}.png`;
+    // Gérer les Mega évolutions (ex: "SceptileMega Sceptile" -> "Sceptile")
+    let baseName = pokemon.Name;
+    let isMega = false;
+    if (pokemon.Name.includes('Mega')) {
+        baseName = pokemon.Name.split('Mega')[0];
+        isMega = true;
+    }
+    
+    const pokemonData = pokemonByName[baseName];
+    const pokemonNumber = pokemonData ? pokemonData.dexNumber : (pokemon.Number + 251);
+    let pokemonName = pokemonData ? pokemonData.name_fr : baseName;
+    if (isMega) {
+        pokemonName = 'Méga-' + pokemonName;
+    }
+    
+    // Pour les Mega évolutions, utiliser l'image mega si disponible
+    let pokemonImage;
+    if (isMega && pokemonData && megaMapping[baseName]) {
+        const megaId = megaMapping[baseName];
+        pokemonImage = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${megaId}.png`;
+    } else {
+        pokemonImage = pokemonData ? pokemonData.image : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemonNumber}.png`;
+    }
     
     const primaryTypeIcon = typeIcons[primaryType] || '';
     const primaryTypeIconHTML = primaryTypeIcon 
@@ -183,7 +263,7 @@ function createCardHTML(pokemon, index) {
             <div class="card-inner">
                 <div class="card-front">
                     <div class="card-front-header">
-                        <span class="pokemon-id">#${nationalId}</span>
+                        <span class="pokemon-id">#${pokemonNumber}</span>
                         <div class="pokemon-hp-front">
                             ${primaryTypeIconHTML}
                             <span>${pokemon.HP} PV</span>
@@ -225,6 +305,14 @@ async function initGame() {
         allPokemons = await responsePokemons.json();
         pokemonsFrench = await responseFrench.json();
         
+        // Créer un map pour lier le nom anglais aux données françaises
+        Object.entries(pokemonsFrench).forEach(([dexNum, data]) => {
+            pokemonByName[data.name_en] = {
+                ...data,
+                dexNumber: dexNum
+            };
+        });
+        
         // Sélectionner 9 Pokémon aléatoires pour chaque joueur
         playerDeck = getRandomPokemons(9);
         botDeck = getRandomPokemons(9);
@@ -232,6 +320,9 @@ async function initGame() {
         // Afficher les decks
         displayDeck(playerDeck, 'playerDeck', true);
         displayDeck(botDeck, 'botDeck', false);
+        
+        // Mettre à jour les compteurs
+        updateCardsCounter();
         
         updateGameInfo("Choisissez un Pokémon pour commencer le combat !");
     } catch (error) {
@@ -276,6 +367,10 @@ function selectPlayerCard(index) {
     const playerCardSlot = document.getElementById('playerCard');
     playerCardSlot.innerHTML = createCardHTML(selectedPlayerCard, index);
     
+    // Afficher la barre de vie dans le conteneur dédié
+    const playerHealthBar = document.getElementById('playerHealthBar');
+    playerHealthBar.innerHTML = createHealthBar('player');
+    
     // Désactiver la carte dans le deck
     const playerDeckElement = document.getElementById('playerDeck');
     playerDeckElement.querySelectorAll('.card')[index].classList.add('disabled');
@@ -299,6 +394,10 @@ function selectBotCard() {
     const botCardSlot = document.getElementById('botCard');
     botCardSlot.innerHTML = createCardHTML(selectedBotCard, randomIndex);
     
+    // Afficher la barre de vie dans le conteneur dédié
+    const botHealthBar = document.getElementById('botHealthBar');
+    botHealthBar.innerHTML = createHealthBar('bot');
+    
     updateGameInfo("Combat en cours...");
     
     // Lancer le combat après un délai
@@ -315,15 +414,41 @@ function executeBattle(botIndex) {
     
     // Simuler le combat tour par tour avec animations
     setTimeout(() => {
+        // Cacher le message pendant le combat
+        const battleInfo = document.getElementById('battleInfo');
+        if (battleInfo) battleInfo.style.display = 'none';
+        
         const result = startBattle(selectedPlayerCard, selectedBotCard);
         
         // Animer le combat
         animateBattle(result, () => {
-            // Obtenir les noms français
-            const playerNationalId = selectedPlayerCard.Number + 251;
-            const botNationalId = selectedBotCard.Number + 251;
-            const playerName = pokemonsFrench[playerNationalId]?.name_fr || selectedPlayerCard.Name;
-            const botName = pokemonsFrench[botNationalId]?.name_fr || selectedBotCard.Name;
+            // Obtenir les noms français avec gestion des Mega évolutions
+            let playerBaseName = selectedPlayerCard.Name;
+            let playerIsMega = false;
+            if (selectedPlayerCard.Name.includes('Mega')) {
+                playerBaseName = selectedPlayerCard.Name.split('Mega')[0];
+                playerIsMega = true;
+            }
+            
+            let botBaseName = selectedBotCard.Name;
+            let botIsMega = false;
+            if (selectedBotCard.Name.includes('Mega')) {
+                botBaseName = selectedBotCard.Name.split('Mega')[0];
+                botIsMega = true;
+            }
+            
+            const playerData = pokemonByName[playerBaseName];
+            const botData = pokemonByName[botBaseName];
+            
+            let playerName = playerData ? playerData.name_fr : playerBaseName;
+            if (playerIsMega) {
+                playerName = 'Méga-' + playerName;
+            }
+            
+            let botName = botData ? botData.name_fr : botBaseName;
+            if (botIsMega) {
+                botName = 'Méga-' + botName;
+            }
             
             // Afficher le résultat
             let message = '';
@@ -333,6 +458,7 @@ function executeBattle(botIndex) {
                 if (playerCardElement) playerCardElement.classList.add('victory');
                 // Retirer la carte du bot
                 botDeck[botIndex] = null;
+                updateCardsCounter();
             } else if (result.winner === 'player2') {
                 message = `😢 ${botName} a gagné... (${result.turns} tours)`;
                 if (playerCardElement) playerCardElement.classList.add('defeat');
@@ -341,10 +467,15 @@ function executeBattle(botIndex) {
                 const playerIndex = playerDeck.indexOf(selectedPlayerCard);
                 if (playerIndex !== -1) {
                     playerDeck[playerIndex] = null;
+                    updateCardsCounter();
                 }
             } else {
                 message = `Match nul après ${result.turns} tours !`;
             }
+            
+            // Réafficher le message d'info
+            const battleInfo = document.getElementById('battleInfo');
+            if (battleInfo) battleInfo.style.display = 'block';
             
             updateGameInfo(message);
             
@@ -359,11 +490,20 @@ function animateBattle(result, callback) {
     const playerCardElement = document.querySelector('#playerCard .card');
     const botCardElement = document.querySelector('#botCard .card');
     
+    // Initialiser les barres de vie
+    const playerMaxHP = calculateTotalHP(selectedPlayerCard);
+    const botMaxHP = calculateTotalHP(selectedBotCard);
+    updateHealthBar('player', playerMaxHP, playerMaxHP);
+    updateHealthBar('bot', botMaxHP, botMaxHP);
+    
     let currentTurn = 0;
-    const turnDelay = 800;
+    const turnDelay = 1500; // Augmenté de 800 à 1500ms pour des combats plus longs
     
     function animateTurn() {
         if (currentTurn >= Math.min(result.turns, 5)) { // Afficher max 5 tours d'animation
+            // Mettre à jour les barres de vie avec les HP finaux
+            updateHealthBar('player', result.finalHP.hp1, playerMaxHP);
+            updateHealthBar('bot', result.finalHP.hp2, botMaxHP);
             callback();
             return;
         }
@@ -376,6 +516,8 @@ function animateBattle(result, callback) {
             setTimeout(() => {
                 playerCardElement?.classList.remove('attacking');
                 botCardElement.classList.add('damaged');
+                // Mettre à jour la barre de vie du bot
+                updateHealthBar('bot', turnData.hp2, botMaxHP);
                 setTimeout(() => botCardElement.classList.remove('damaged'), 400);
             }, 250);
         }
@@ -387,6 +529,8 @@ function animateBattle(result, callback) {
                 setTimeout(() => {
                     botCardElement?.classList.remove('attacking');
                     playerCardElement.classList.add('damaged');
+                    // Mettre à jour la barre de vie du joueur
+                    updateHealthBar('player', turnData.hp1, playerMaxHP);
                     setTimeout(() => playerCardElement.classList.remove('damaged'), 400);
                 }, 250);
             }
@@ -421,19 +565,33 @@ function checkGameEnd() {
     // Vider les slots de combat
     document.getElementById('playerCard').innerHTML = '<p>Choisissez votre Pokémon</p>';
     document.getElementById('botCard').innerHTML = '<p>En attente...</p>';
+    document.getElementById('playerHealthBar').innerHTML = '';
+    document.getElementById('botHealthBar').innerHTML = '';
     
     // Mettre à jour l'affichage du deck du bot
     displayDeck(botDeck, 'botDeck', false);
     
-    updateGameInfo(`Cartes restantes - Vous: ${playerCardsLeft} | Adversaire: ${botCardsLeft}. Choisissez votre prochain Pokémon !`);
+    updateGameInfo("Choisissez votre prochain Pokémon !");
 }
 
 // Fonction pour mettre à jour le message d'information
 function updateGameInfo(message) {
-    const gameInfo = document.querySelector('.game-info p');
+    const gameInfo = document.querySelector('.battle-info p');
     if (gameInfo) {
         gameInfo.textContent = message;
     }
+}
+
+// Fonction pour mettre à jour les compteurs de cartes
+function updateCardsCounter() {
+    const playerCardsLeft = playerDeck.filter(p => p !== null).length;
+    const botCardsLeft = botDeck.filter(p => p !== null).length;
+    
+    const playerCounter = document.querySelector('#playerCardsCounter .counter');
+    const botCounter = document.querySelector('#botCardsCounter .counter');
+    
+    if (playerCounter) playerCounter.textContent = playerCardsLeft;
+    if (botCounter) botCounter.textContent = botCardsLeft;
 }
 
 // Initialiser le jeu au chargement de la page
