@@ -111,7 +111,35 @@ h3 {
     justify-content: center;
     align-items: center;
     box-sizing: border-box;
-    border: 1px solid #ccc;
+    background-color: white;
+    border: 3px solid #ccc;
+    overflow: hidden;
+}
+
+.card-front::before,
+.card-back::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 200%;
+    height: 100%;
+    border-radius: 50%;
+    z-index: 0;
+}
+
+.card-front::before {
+    top: -35%;
+}
+
+.card-back::before {
+    top: -50%;
+}
+
+.card-front > *,
+.card-back > * {
+    position: relative;
+    z-index: 1;
 }
 
 .card-front {
@@ -121,15 +149,35 @@ h3 {
 .card-back {
     transform: rotateY(180deg);
     box-shadow: 2px 2px 12px rgba(0,0,0,0.1);
+    justify-content: flex-start;
+    padding-top: 40px;
 }
 
 .pokemon-id {
-    position: absolute;
-    top: 10px;
-    right: 15px;
     font-weight: bold;
-    font-size: 1.1rem;
+    font-size: 1rem;
     margin: 0;
+}
+
+.card-front-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 8px 8px 0 0;
+    font-weight: bold;
+    z-index: 2;
+}
+
+.pokemon-hp-front {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 1rem;
 }
 
 .pokemon-image {
@@ -141,10 +189,20 @@ h3 {
     margin: 20px 0;
 }
 
+.card-back .pokemon-image {
+    height: 120px;
+    scale: 1.5;
+    margin: 10px 0;
+}
+
 .pokemon-image img {
     width: 150px;
     image-rendering: pixelated;
     filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+}
+
+.card-back .pokemon-image img {
+    width: 100px;
 }
 
 .card h2 {
@@ -152,13 +210,59 @@ h3 {
     font-size: 1.5rem;
 }
 
-.card-back h2 {
-    margin-bottom: 20px;
+.type-icon {
+    width: 18px;
+    height: 18px;
+    vertical-align: middle;
+    margin-right: 4px;
+}
+
+/* Couleurs des icônes de type - en fonction du type de l'icône elle-même */
+.type-icon-grass { filter: brightness(0) saturate(100%) invert(59%) sepia(58%) saturate(398%) hue-rotate(44deg) brightness(96%) contrast(86%); }
+.type-icon-fire { filter: brightness(0) saturate(100%) invert(70%) sepia(42%) saturate(1051%) hue-rotate(330deg) brightness(101%) contrast(101%); }
+.type-icon-water { filter: brightness(0) saturate(100%) invert(55%) sepia(58%) saturate(579%) hue-rotate(178deg) brightness(92%) contrast(90%); }
+.type-icon-electric { filter: brightness(0) saturate(100%) invert(86%) sepia(44%) saturate(764%) hue-rotate(350deg) brightness(99%) contrast(95%); }
+.type-icon-psychic { filter: brightness(0) saturate(100%) invert(69%) sepia(26%) saturate(1395%) hue-rotate(310deg) brightness(100%) contrast(96%); }
+.type-icon-ice { filter: brightness(0) saturate(100%) invert(80%) sepia(18%) saturate(905%) hue-rotate(130deg) brightness(93%) contrast(87%); }
+.type-icon-dragon { filter: brightness(0) saturate(100%) invert(31%) sepia(91%) saturate(1407%) hue-rotate(187deg) brightness(91%) contrast(101%); }
+.type-icon-dark { filter: brightness(0) saturate(100%) invert(36%) sepia(9%) saturate(837%) hue-rotate(213deg) brightness(92%) contrast(87%); }
+.type-icon-fairy { filter: brightness(0) saturate(100%) invert(73%) sepia(42%) saturate(1371%) hue-rotate(280deg) brightness(98%) contrast(93%); }
+.type-icon-poison { filter: brightness(0) saturate(100%) invert(56%) sepia(49%) saturate(1121%) hue-rotate(240deg) brightness(89%) contrast(88%); }
+.type-icon-ground { filter: brightness(0) saturate(100%) invert(60%) sepia(37%) saturate(741%) hue-rotate(339deg) brightness(90%) contrast(91%); }
+.type-icon-flying { filter: brightness(0) saturate(100%) invert(69%) sepia(29%) saturate(705%) hue-rotate(179deg) brightness(93%) contrast(87%); }
+.type-icon-bug { filter: brightness(0) saturate(100%) invert(66%) sepia(73%) saturate(323%) hue-rotate(33deg) brightness(93%) contrast(86%); }
+.type-icon-rock { filter: brightness(0) saturate(100%) invert(78%) sepia(18%) saturate(367%) hue-rotate(5deg) brightness(91%) contrast(89%); }
+.type-icon-ghost { filter: brightness(0) saturate(100%) invert(38%) sepia(35%) saturate(967%) hue-rotate(212deg) brightness(91%) contrast(87%); }
+.type-icon-fighting { filter: brightness(0) saturate(100%) invert(46%) sepia(50%) saturate(1281%) hue-rotate(306deg) brightness(91%) contrast(84%); }
+.type-icon-steel { filter: brightness(0) saturate(100%) invert(58%) sepia(17%) saturate(859%) hue-rotate(151deg) brightness(90%) contrast(87%); }
+.type-icon-normal { filter: brightness(0) saturate(100%) invert(65%) sepia(8%) saturate(586%) hue-rotate(169deg) brightness(93%) contrast(86%); }
+
+/* Icône dans le header - couleur blanche/claire pour contraster avec le fond coloré */
+.type-icon-header {
+    filter: brightness(0) saturate(100%) invert(100%) !important;
+}
+
+.pokemon-hp {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-weight: bold;
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+.card-back-hp {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-weight: bold;
+    font-size: 1.1rem;
+    z-index: 2;
 }
 
 .card-back .type {
-    margin-bottom: 20px;
-    font-size: 1.1rem;
+    margin: 10px 0;
+    font-size: 1rem;
 }
 
 .card-back .stats {
@@ -167,8 +271,7 @@ h3 {
     transform: none;
     transition: none;
     width: 75%;
-    height: 25%;
-    padding: 15px;
+    padding: 10px;
     border-radius: 6px;
     background: rgba(255, 255, 255, 0.1);
     display: flex;
@@ -178,103 +281,301 @@ h3 {
 }
 
 .card-back .stats p {
-    margin: 8px 0;
-    font-size: 1rem;
+    margin: 5px 0;
+    font-size: 0.95rem;
+}
+
+.grass .card-front-header,
+.grass .card-back-hp {
+    background-color: #91c12f;
+    color: white;
 }
 
 .grass .card-front,
 .grass .card-back {
+    border-color: #91c12f;
+    background-color: rgb(247, 255, 230);
+}
+
+.grass .card-front::before,
+.grass .card-back::before {
     background-color: #91c12f;
+}
+
+.fire .card-front-header,
+.fire .card-back-hp {
+    background-color: #ff9d55;
+    color: white;
 }
 
 .fire .card-front,
 .fire .card-back {
+    border-color: #ff9d55;
+    background-color: rgb(255, 246, 240);
+}
+
+.fire .card-front::before,
+.fire .card-back::before {
     background-color: #ff9d55;
+}
+
+.water .card-front-header,
+.water .card-back-hp {
+    background-color: #5090d6;
+    color: white;
 }
 
 .water .card-front,
 .water .card-back {
+    border-color: #5090d6;
+    background-color: rgb(235, 244, 255);
+}
+
+.water .card-front::before,
+.water .card-back::before {
     background-color: #5090d6;
-    color: #fff;
+}
+
+.electric .card-front-header,
+.electric .card-back-hp {
+    background-color: #f4d23c;
+    color: #333;
 }
 
 .electric .card-front,
 .electric .card-back {
+    border-color: #f4d23c;
+    background-color: rgb(255, 252, 239)
+}
+
+.electric .card-front::before,
+.electric .card-back::before {
     background-color: #f4d23c;
+}
+
+.psychic .card-front-header,
+.psychic .card-back-hp {
+    background-color: #fa7179;
+    color: white;
 }
 
 .psychic .card-front,
 .psychic .card-back {
+    border-color: #fa7179;
+    background-color: rgb(255, 232, 234);
+}
+
+.psychic .card-front::before,
+.psychic .card-back::before {
     background-color: #fa7179;
+}
+
+.ice .card-front-header,
+.ice .card-back-hp {
+    background-color: #73cec0;
+    color: white;
 }
 
 .ice .card-front,
 .ice .card-back {
+    border-color: #73cec0;
+    background-color: rgb(233, 255, 252);
+}
+
+.ice .card-front::before,
+.ice .card-back::before {
     background-color: #73cec0;
+}
+
+.fighting .card-front-header,
+.fighting .card-back-hp {
+    background-color: #ce416b;
+    color: white;
 }
 
 .fighting .card-front,
 .fighting .card-back {
+    border-color: #ce416b;
+    background-color: rgb(255, 244, 247);
+}
+
+.fighting .card-front::before,
+.fighting .card-back::before {
     background-color: #ce416b;
+}
+
+.ground .card-front-header,
+.ground .card-back-hp {
+    background-color: #d97845;
+    color: white;
 }
 
 .ground .card-front,
 .ground .card-back {
+    border-color: #d97845;
+    background-color: rgb(255, 241, 233);
+}
+
+.ground .card-front::before,
+.ground .card-back::before {
     background-color: #d97845;
+}
+
+.rock .card-front-header,
+.rock .card-back-hp {
+    background-color: #c5b78c;
+    color: #333;
 }
 
 .rock .card-front,
 .rock .card-back {
+    border-color: #c5b78c;
+    background-color: rgb(255, 249, 232);
+}
+
+.rock .card-front::before,
+.rock .card-back::before {
     background-color: #c5b78c;
+}
+
+.dark .card-front-header,
+.dark .card-back-hp {
+    background-color: #5a5465;
+    color: white;
 }
 
 .dark .card-front,
 .dark .card-back {
+    border-color: #5a5465;
+    background-color: rgb(247, 247, 247);
+}
+.dark .card-front::before,
+.dark .card-back::before {
     background-color: #5a5465;
-    color: #fff;
+}
+
+.bug .card-front-header,
+.bug .card-back-hp {
+    background-color: #A8B820;
+    color: white;
 }
 
 .bug .card-front,
 .bug .card-back {
+    border-color: #A8B820;
+    background-color: rgb(248, 255, 237);
+}
+
+.bug .card-front::before,
+.bug .card-back::before {
     background-color: #A8B820;
+}
+
+.flying .card-front-header,
+.flying .card-back-hp {
+    background-color: #89aae3;
+    color: white;
 }
 
 .flying .card-front,
 .flying .card-back {
+    border-color: #89aae3;
+    background-color: rgba(137, 170, 227, 0.15);
+}
+
+.flying .card-front::before,
+.flying .card-back::before {
     background-color: #89aae3;
 }
-
+.fairy .card-front-header,
+.fairy .card-back-hp {
+    background-color: #ec8fe6;
+    color: white;
+}
 .fairy .card-front,
 .fairy .card-back {
-    background-color: #ec8fe6;
+    border-color: #ec8fe6;
+    background-color: rgb(255, 240, 254)
 }
 
+.fairy .card-front::before,
+.fairy .card-back::before {
+    background-color: #ec8fe6;
+}
+.poison .card-front-header,
+.poison .card-back-hp {
+    background-color: #b567ce;
+    color: white;
+}
 .poison .card-front,
 .poison .card-back {
+    border-color: #b567ce;
+    background-color: rgb(251, 238, 255);
+}
+
+.poison .card-front::before,
+.poison .card-back::before {
     background-color: #b567ce;
-    color: #fff;
+}
+
+.ghost .card-front-header,
+.ghost .card-back-hp {
+    background-color: #655bbb;
+    color: white;
 }
 
 .ghost .card-front,
 .ghost .card-back {
-    background-color: #655bbb;
-    color: #fff;
+    border-color: #655bbb;
+    background-color: rgb(240, 238, 255);
 }
 
+.ghost .card-front::before,
+.ghost .card-back::before {
+    background-color: #655bbb;
+}
+.dragon .card-front-header,
+.dragon .card-back-hp {
+    background-color: #0b6dc3;
+    color: white;
+}
 .dragon .card-front,
 .dragon .card-back {
-    background-color: #0b6dc3;
-    color: #fff;
+    border-color: #0b6dc3;
+    background-color: rgb(245, 250, 255);
 }
 
+.dragon .card-front::before,
+.dragon .card-back::before {
+    background-color: #0b6dc3;
+}
+.steel .card-front-header,
+.steel .card-back-hp {
+    background-color: #5a8ea2;
+    color: white;
+}
 .steel .card-front,
 .steel .card-back {
-    background-color: #5a8ea2;
-    color: #fff;
+    border-color: #5a8ea2;
+    background-color: rgb(235, 249, 255);
 }
 
+.steel .card-front::before,
+.steel .card-back::before {
+    background-color: #5a8ea2;
+}
+.normal .card-front-header,
+.normal .card-back-hp {
+    background-color: #919aa2;
+    color: white;
+}
 .normal .card-front,
 .normal .card-back {
+    border-color: #919aa2;
+    background-color: rgb(241, 241, 241);
+}
+
+.normal .card-front::before,
+.normal .card-back::before {
     background-color: #919aa2;
-    color: #fff;
 }

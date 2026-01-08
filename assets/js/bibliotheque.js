@@ -184,6 +184,9 @@ window.addEventListener('DOMContentLoaded', function() {
             if(pokemon['Type 1'] == 'Ghost') {
                 card.classList.add('ghost');
             }
+            if(pokemon['Type 1'] == 'Fighting') {
+                card.classList.add('fighting');
+            }
             if(pokemon['Type 1'] == 'Steel') {
                 card.classList.add('steel');
             }
@@ -197,24 +200,63 @@ window.addEventListener('DOMContentLoaded', function() {
                 types += ', ' + pokemon['Type 2'];
             }
             
-            //Ajout de la traduction du type en français
-            types = types.replace('Grass', '🍃Plante')
-                            .replace('Fire', '🔥Feu')
-                            .replace('Water', '💧Eau')
-                            .replace('Electric', '⚡Électrik')
-                            .replace('Psychic', '🔮Psy')
-                            .replace('Ice', '❄️Glace')
-                            .replace('Dragon', '🐉Dragon')
-                            .replace('Dark', '🌑Ténèbres')
-                            .replace('Fairy', '🧚‍♀️Fée')
-                            .replace('Poison', '☠️Poison')
-                            .replace('Ground', '🌍Sol')
-                            .replace('Flying', '🕊️Vol')
-                            .replace('Bug', '🐛Insecte')
-                            .replace('Rock', '🪨Roche')
-                            .replace('Ghost', '👻Spectre')
-                            .replace('Steel', '⚙️Acier')
-                            .replace('Normal', 'Normal');
+            //Ajout de la traduction du type en français avec icônes
+            const typeIcons = {
+                'Grass': 'https://raw.githubusercontent.com/duiker101/pokemon-type-svg-icons/master/icons/grass.svg',
+                'Fire': 'https://raw.githubusercontent.com/duiker101/pokemon-type-svg-icons/master/icons/fire.svg',
+                'Water': 'https://raw.githubusercontent.com/duiker101/pokemon-type-svg-icons/master/icons/water.svg',
+                'Electric': 'https://raw.githubusercontent.com/duiker101/pokemon-type-svg-icons/master/icons/electric.svg',
+                'Psychic': 'https://raw.githubusercontent.com/duiker101/pokemon-type-svg-icons/master/icons/psychic.svg',
+                'Ice': 'https://raw.githubusercontent.com/duiker101/pokemon-type-svg-icons/master/icons/ice.svg',
+                'Dragon': 'https://raw.githubusercontent.com/duiker101/pokemon-type-svg-icons/master/icons/dragon.svg',
+                'Dark': 'https://raw.githubusercontent.com/duiker101/pokemon-type-svg-icons/master/icons/dark.svg',
+                'Fairy': 'https://raw.githubusercontent.com/duiker101/pokemon-type-svg-icons/master/icons/fairy.svg',
+                'Poison': 'https://raw.githubusercontent.com/duiker101/pokemon-type-svg-icons/master/icons/poison.svg',
+                'Ground': 'https://raw.githubusercontent.com/duiker101/pokemon-type-svg-icons/master/icons/ground.svg',
+                'Flying': 'https://raw.githubusercontent.com/duiker101/pokemon-type-svg-icons/master/icons/flying.svg',
+                'Bug': 'https://raw.githubusercontent.com/duiker101/pokemon-type-svg-icons/master/icons/bug.svg',
+                'Rock': 'https://raw.githubusercontent.com/duiker101/pokemon-type-svg-icons/master/icons/rock.svg',
+                'Ghost': 'https://raw.githubusercontent.com/duiker101/pokemon-type-svg-icons/master/icons/ghost.svg',
+                'Fighting': 'https://raw.githubusercontent.com/duiker101/pokemon-type-svg-icons/master/icons/fighting.svg',
+                'Steel': 'https://raw.githubusercontent.com/duiker101/pokemon-type-svg-icons/master/icons/steel.svg',
+                'Normal': 'https://raw.githubusercontent.com/duiker101/pokemon-type-svg-icons/master/icons/normal.svg'
+            };
+            
+            const typeNames = {
+                'Grass': 'Plante',
+                'Fire': 'Feu',
+                'Water': 'Eau',
+                'Electric': 'Électricité',
+                'Psychic': 'Psy',
+                'Ice': 'Glace',
+                'Dragon': 'Dragon',
+                'Dark': 'Ténèbres',
+                'Fairy': 'Fée',
+                'Poison': 'Poison',
+                'Ground': 'Sol',
+                'Flying': 'Vol',
+                'Bug': 'Insecte',
+                'Rock': 'Roche',
+                'Ghost': 'Spectre',
+                'Fighting': 'Combat',
+                'Steel': 'Acier',
+                'Normal': 'Normal'
+            };
+            
+            // Créer une version avec icônes pour l'affichage
+            let typesDisplay = types.split(', ').map(type => {
+                const trimmedType = type.trim();
+                const icon = typeIcons[trimmedType];
+                const name = typeNames[trimmedType];
+                const typeClass = trimmedType.toLowerCase();
+                return icon ? `<img src="${icon}" class="type-icon type-icon-${typeClass}" alt="${name}"> ${name}` : type;
+            }).join(', ');
+            
+            // Icône du type principal uniquement (pour la face avant)
+            const primaryType = pokemon['Type 1'];
+            const primaryTypeIcon = typeIcons[primaryType];
+            const primaryTypeClass = primaryType.toLowerCase();
+            const primaryTypeIconHTML = primaryTypeIcon ? `<img src="${primaryTypeIcon}" class="type-icon type-icon-header type-icon-${primaryTypeClass}" alt="${typeNames[primaryType]}">` : '';
 
             // Obtenir le nom français si disponible
             // Gérer les Mega évolutions (ex: "SceptileMega Sceptile" -> "Sceptile")
@@ -246,17 +288,28 @@ window.addEventListener('DOMContentLoaded', function() {
             card.innerHTML = `
                 <div class="card-inner">
                     <div class="card-front">
-                        <p class="pokemon-id">#${pokemonNumber}</p>
+                        <div class="card-front-header">
+                            <span class="pokemon-id">#${pokemonNumber}</span>
+                            <div class="pokemon-hp-front">
+                                ${primaryTypeIconHTML}
+                                <span>${pokemon.HP} PV</span>
+                            </div>
+                        </div>
                         <div class="pokemon-image">
                             <img src="${imageUrl}" alt="${displayName}" loading="lazy">
                         </div>
                         <h2>${displayName}</h2>
                     </div>
                     <div class="card-back">
-                        <h2>${displayName}</h2>
-                        <p class="type">Type: ${types}</p>
+                        <div class="card-back-hp">
+                            ${primaryTypeIconHTML}
+                            <span>${pokemon.HP} PV</span>
+                        </div>
+                        <div class="pokemon-image">
+                            <img src="${imageUrl}" alt="${displayName}" loading="lazy">
+                        </div>
+                        <p class="type">${typesDisplay}</p>
                         <div class="stats">
-                            <p>PV: <b>${pokemon.HP}</b></p>
                             <p>Attaque: <b>${pokemon.Attack}</b></p>
                             <p>Défense: <b>${pokemon.Defense}</b></p>
                         </div>
