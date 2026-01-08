@@ -18,12 +18,18 @@
 
         <!-- Zone de combat (au centre) -->
         <div class="battle-arena">
-            <div id="botCard" class="battle-card-slot">
-                <p>Carte Bot</p>
+            <div class="battle-side">
+                <div id="botHealthBar" class="health-bar-wrapper"></div>
+                <div id="botCard" class="battle-card-slot">
+                    <p>Carte Bot</p>
+                </div>
             </div>
             <div class="vs-badge">VS</div>
-            <div id="playerCard" class="battle-card-slot">
-                <p>Carte Joueur</p>
+            <div class="battle-side">
+                <div id="playerCard" class="battle-card-slot">
+                    <p>Carte Joueur</p>
+                </div>
+                <div id="playerHealthBar" class="health-bar-wrapper"></div>
             </div>
         </div>
 
@@ -34,8 +40,18 @@
         </div>
 
         <!-- Panneau d'informations -->
-        <div id="gameInfo" class="game-info">
+        <div id="battleInfo" class="battle-info">
             <p>Choisissez votre Pokémon pour commencer!</p>
+        </div>
+        
+        <!-- Compteurs de cartes -->
+        <div id="botCardsCounter" class="cards-counter cards-counter-left">
+            <p>Adversaire</p>
+            <span class="counter">9</span>
+        </div>
+        <div id="playerCardsCounter" class="cards-counter cards-counter-right">
+            <p>Vos cartes</p>
+            <span class="counter">9</span>
         </div>
     </div>
 </body>
