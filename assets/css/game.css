@@ -8,6 +8,157 @@ body {
     overflow: hidden;
 }
 
+/* Modal de connexion multijoueur */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal-content {
+    background: linear-gradient(145deg, #1a1a2e, #16213e);
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    text-align: center;
+    max-width: 500px;
+    width: 90%;
+    color: white;
+}
+
+.modal-content h2 {
+    margin-bottom: 30px;
+    font-size: 2rem;
+}
+
+.game-mode-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.mode-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.mode-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: #4CAF50;
+    transform: translateY(-3px);
+}
+
+.mode-icon {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+}
+
+.mode-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.mode-desc {
+    font-size: 0.9rem;
+    opacity: 0.7;
+}
+
+.connection-section {
+    margin-top: 20px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+.connection-section.hidden {
+    display: none;
+}
+
+.connection-section h3 {
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+}
+
+.link-container, .join-container {
+    display: flex;
+    gap: 10px;
+}
+
+.link-container input, .join-container input {
+    flex: 1;
+    padding: 12px 15px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    background: rgba(255, 255, 255, 0.9);
+    color: #333;
+}
+
+.link-container button, .join-container button {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    background: #4CAF50;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.link-container button:hover, .join-container button:hover {
+    background: #45a049;
+}
+
+.waiting-text {
+    margin-top: 15px;
+    font-size: 1rem;
+    opacity: 0.8;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 0.4; }
+}
+
+.connection-status {
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(76, 175, 80, 0.2);
+    border-radius: 10px;
+    border: 1px solid #4CAF50;
+}
+
+.connection-status.hidden {
+    display: none;
+}
+
+.connection-status.error {
+    background: rgba(244, 67, 54, 0.2);
+    border-color: #f44336;
+}
+
 .game-container {
     max-width: 100vw;
     width: 100vw;

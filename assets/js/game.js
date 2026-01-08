@@ -6,13 +6,23 @@ let gameLog = [];
 
 // Variables pour la gestion du jeu
 let playerDeck = [];
-let botDeck = [];
+let botDeck = []; // Aussi utilisé pour le deck de l'adversaire en multijoueur
 let allPokemons = [];
 let pokemonsFrench = {};
 let pokemonByName = {}; // Map pour lier nom anglais -> données françaises
 let selectedPlayerCard = null;
 let selectedBotCard = null;
 let isPlayerTurn = true;
+
+// Variables multijoueur
+let isMultiplayer = false;
+let isHost = false;
+let peer = null;
+let conn = null;
+let gameId = null;
+let opponentReady = false;
+let mySelectedCardIndex = null;
+let opponentSelectedCardIndex = null;
 
 // Mapping manuel des Mega évolutions vers leurs IDs PokeAPI
 const megaMapping = {
@@ -313,18 +323,9 @@ async function initGame() {
             };
         });
         
-        // Sélectionner 9 Pokémon aléatoires pour chaque joueur
-        playerDeck = getRandomPokemons(9);
-        botDeck = getRandomPokemons(9);
+        // Initialiser le système multijoueur
+        initMultiplayer();
         
-        // Afficher les decks
-        displayDeck(playerDeck, 'playerDeck', true);
-        displayDeck(botDeck, 'botDeck', false);
-        
-        // Mettre à jour les compteurs
-        updateCardsCounter();
-        
-        updateGameInfo("Choisissez un Pokémon pour commencer le combat !");
     } catch (error) {
         console.error('Erreur lors du chargement des Pokémon:', error);
     }
@@ -352,7 +353,13 @@ function displayDeck(deck, elementId, isPlayer) {
     if (isPlayer) {
         const cards = deckElement.querySelectorAll('.card');
         cards.forEach((card, index) => {
-            card.addEventListener('click', () => selectPlayerCard(index));
+            card.addEventListener('click', () => {
+                if (isMultiplayer) {
+                    selectPlayerCardMultiplayer(index);
+                } else {
+                    selectPlayerCard(index);
+                }
+            });
         });
     }
 }
@@ -592,6 +599,393 @@ function updateCardsCounter() {
     
     if (playerCounter) playerCounter.textContent = playerCardsLeft;
     if (botCounter) botCounter.textContent = botCardsLeft;
+}
+
+// ==========================================
+// SYSTÈME MULTIJOUEUR (PeerJS)
+// ==========================================
+
+// Initialiser le système multijoueur
+function initMultiplayer() {
+    const modal = document.getElementById('multiplayerModal');
+    const soloBtn = document.getElementById('soloBtn');
+    const hostBtn = document.getElementById('hostBtn');
+    const joinBtn = document.getElementById('joinBtn');
+    const copyLinkBtn = document.getElementById('copyLinkBtn');
+    const connectBtn = document.getElementById('connectBtn');
+    
+    // Vérifier si on a un code dans l'URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const joinCode = urlParams.get('join');
+    
+    if (joinCode) {
+        // Rejoindre automatiquement si code dans URL
+        document.getElementById('joinSection').classList.remove('hidden');
+        document.getElementById('gameCode').value = joinCode;
+        joinGame(joinCode);
+        return;
+    }
+    
+    // Mode Solo
+    soloBtn.addEventListener('click', () => {
+        isMultiplayer = false;
+        modal.classList.add('hidden');
+        startSoloGame();
+    });
+    
+    // Créer une partie
+    hostBtn.addEventListener('click', () => {
+        document.getElementById('hostSection').classList.remove('hidden');
+        document.getElementById('joinSection').classList.add('hidden');
+        createGame();
+    });
+    
+    // Rejoindre une partie
+    joinBtn.addEventListener('click', () => {
+        document.getElementById('joinSection').classList.remove('hidden');
+        document.getElementById('hostSection').classList.add('hidden');
+    });
+    
+    // Copier le lien
+    copyLinkBtn.addEventListener('click', () => {
+        const shareLink = document.getElementById('shareLink');
+        shareLink.select();
+        document.execCommand('copy');
+        copyLinkBtn.textContent = '✅ Copié !';
+        setTimeout(() => copyLinkBtn.textContent = '📋 Copier', 2000);
+    });
+    
+    // Se connecter
+    connectBtn.addEventListener('click', () => {
+        const code = document.getElementById('gameCode').value.trim();
+        if (code) {
+            joinGame(code);
+        }
+    });
+}
+
+// Créer une partie (hôte)
+function createGame() {
+    isHost = true;
+    isMultiplayer = true;
+    
+    // Générer un ID aléatoire pour la partie
+    gameId = 'pokemon-' + Math.random().toString(36).substring(2, 8);
+    
+    // Créer le peer
+    peer = new Peer(gameId);
+    
+    peer.on('open', (id) => {
+        console.log('Partie créée avec ID:', id);
+        const shareLink = document.getElementById('shareLink');
+        const gameUrl = `${window.location.origin}${window.location.pathname}?join=${id}`;
+        shareLink.value = gameUrl;
+        
+        showStatus('En attente d\'un adversaire...', false);
+    });
+    
+    peer.on('connection', (connection) => {
+        conn = connection;
+        setupConnection();
+    });
+    
+    peer.on('error', (err) => {
+        console.error('Erreur Peer:', err);
+        showStatus('Erreur de connexion: ' + err.type, true);
+    });
+}
+
+// Rejoindre une partie (invité)
+function joinGame(hostId) {
+    isHost = false;
+    isMultiplayer = true;
+    
+    showStatus('Connexion en cours...', false);
+    
+    // Créer le peer
+    peer = new Peer();
+    
+    peer.on('open', () => {
+        console.log('Connexion à la partie:', hostId);
+        conn = peer.connect(hostId);
+        setupConnection();
+    });
+    
+    peer.on('error', (err) => {
+        console.error('Erreur Peer:', err);
+        showStatus('Erreur de connexion: ' + err.type, true);
+    });
+}
+
+// Configurer la connexion
+function setupConnection() {
+    conn.on('open', () => {
+        console.log('Connexion établie !');
+        showStatus('Connexion réussie ! Préparation du jeu...', false);
+        
+        // L'hôte envoie les données du jeu
+        if (isHost) {
+            setTimeout(() => {
+                // Générer les decks
+                playerDeck = getRandomPokemons(9);
+                botDeck = getRandomPokemons(9);
+                
+                // Envoyer les decks à l'adversaire (inversés pour lui)
+                sendMessage({
+                    type: 'init',
+                    hostDeck: playerDeck,
+                    guestDeck: botDeck
+                });
+                
+                startMultiplayerGame();
+            }, 500);
+        }
+    });
+    
+    conn.on('data', (data) => {
+        handleMessage(data);
+    });
+    
+    conn.on('close', () => {
+        console.log('Connexion fermée');
+        showStatus('L\'adversaire s\'est déconnecté', true);
+    });
+}
+
+// Envoyer un message
+function sendMessage(data) {
+    if (conn && conn.open) {
+        conn.send(data);
+    }
+}
+
+// Gérer les messages reçus
+function handleMessage(data) {
+    console.log('Message reçu:', data);
+    
+    switch (data.type) {
+        case 'init':
+            // Invité reçoit les decks (inversés)
+            playerDeck = data.guestDeck;
+            botDeck = data.hostDeck;
+            startMultiplayerGame();
+            break;
+            
+        case 'selectCard':
+            // L'adversaire a sélectionné une carte
+            opponentSelectedCardIndex = data.index;
+            selectedBotCard = botDeck[data.index];
+            
+            // Afficher la carte de l'adversaire
+            const botCardSlot = document.getElementById('botCard');
+            botCardSlot.innerHTML = createCardHTML(selectedBotCard, data.index);
+            
+            const botHealthBar = document.getElementById('botHealthBar');
+            botHealthBar.innerHTML = createHealthBar('bot');
+            
+            // Si les deux joueurs ont sélectionné, lancer le combat
+            if (mySelectedCardIndex !== null) {
+                updateGameInfo("Combat en cours...");
+                setTimeout(() => executeMultiplayerBattle(), 1000);
+            } else {
+                updateGameInfo("En attente de votre sélection...");
+            }
+            break;
+            
+        case 'battleResult':
+            // Résultat du combat (envoyé par l'hôte)
+            handleBattleResult(data.result);
+            break;
+    }
+}
+
+// Afficher le statut de connexion
+function showStatus(message, isError) {
+    const statusDiv = document.getElementById('connectionStatus');
+    const statusText = document.getElementById('statusText');
+    
+    statusDiv.classList.remove('hidden');
+    statusText.textContent = message;
+    
+    if (isError) {
+        statusDiv.classList.add('error');
+    } else {
+        statusDiv.classList.remove('error');
+    }
+}
+
+// Démarrer une partie solo
+function startSoloGame() {
+    playerDeck = getRandomPokemons(9);
+    botDeck = getRandomPokemons(9);
+    
+    displayDeck(playerDeck, 'playerDeck', true);
+    displayDeck(botDeck, 'botDeck', false);
+    
+    updateCardsCounter();
+    updateGameInfo("Choisissez un Pokémon pour commencer le combat !");
+}
+
+// Démarrer une partie multijoueur
+function startMultiplayerGame() {
+    document.getElementById('multiplayerModal').classList.add('hidden');
+    
+    displayDeck(playerDeck, 'playerDeck', true);
+    displayDeck(botDeck, 'botDeck', false);
+    
+    updateCardsCounter();
+    updateGameInfo("Choisissez un Pokémon pour combattre !");
+    
+    // Réinitialiser les sélections
+    mySelectedCardIndex = null;
+    opponentSelectedCardIndex = null;
+}
+
+// Sélectionner une carte en multijoueur
+function selectPlayerCardMultiplayer(index) {
+    if (!playerDeck[index] || mySelectedCardIndex !== null) return;
+    
+    mySelectedCardIndex = index;
+    selectedPlayerCard = playerDeck[index];
+    
+    // Afficher ma carte
+    const playerCardSlot = document.getElementById('playerCard');
+    playerCardSlot.innerHTML = createCardHTML(selectedPlayerCard, index);
+    
+    const playerHealthBar = document.getElementById('playerHealthBar');
+    playerHealthBar.innerHTML = createHealthBar('player');
+    
+    // Désactiver la carte dans le deck
+    const playerDeckElement = document.getElementById('playerDeck');
+    playerDeckElement.querySelectorAll('.card')[index].classList.add('disabled');
+    
+    // Envoyer la sélection à l'adversaire
+    sendMessage({
+        type: 'selectCard',
+        index: index
+    });
+    
+    // Si l'adversaire a déjà sélectionné, lancer le combat
+    if (opponentSelectedCardIndex !== null) {
+        updateGameInfo("Combat en cours...");
+        setTimeout(() => executeMultiplayerBattle(), 1000);
+    } else {
+        updateGameInfo("En attente de l'adversaire...");
+    }
+}
+
+// Exécuter le combat en multijoueur
+function executeMultiplayerBattle() {
+    const playerCardElement = document.querySelector('#playerCard .card');
+    const botCardElement = document.querySelector('#botCard .card');
+    
+    updateGameInfo("⚔️ Le combat commence !");
+    
+    setTimeout(() => {
+        const battleInfo = document.getElementById('battleInfo');
+        if (battleInfo) battleInfo.style.display = 'none';
+        
+        // Seul l'hôte calcule le combat
+        if (isHost) {
+            const result = startBattle(selectedPlayerCard, selectedBotCard);
+            
+            // Envoyer le résultat à l'invité
+            sendMessage({
+                type: 'battleResult',
+                result: result
+            });
+            
+            // Traiter le résultat localement
+            handleBattleResult(result);
+        }
+    }, 500);
+}
+
+// Gérer le résultat du combat
+function handleBattleResult(result) {
+    const playerCardElement = document.querySelector('#playerCard .card');
+    const botCardElement = document.querySelector('#botCard .card');
+    
+    animateBattle(result, () => {
+        // Obtenir les noms français
+        let playerBaseName = selectedPlayerCard.Name;
+        let playerIsMega = false;
+        if (selectedPlayerCard.Name.includes('Mega')) {
+            playerBaseName = selectedPlayerCard.Name.split('Mega')[0];
+            playerIsMega = true;
+        }
+        
+        let botBaseName = selectedBotCard.Name;
+        let botIsMega = false;
+        if (selectedBotCard.Name.includes('Mega')) {
+            botBaseName = selectedBotCard.Name.split('Mega')[0];
+            botIsMega = true;
+        }
+        
+        const playerData = pokemonByName[playerBaseName];
+        const botData = pokemonByName[botBaseName];
+        
+        let playerName = playerData ? playerData.name_fr : playerBaseName;
+        if (playerIsMega) playerName = 'Méga-' + playerName;
+        
+        let botName = botData ? botData.name_fr : botBaseName;
+        if (botIsMega) botName = 'Méga-' + botName;
+        
+        let message = '';
+        if (result.winner === 'player1') {
+            message = `🎉 ${playerName} a gagné !`;
+            if (botCardElement) botCardElement.classList.add('defeat');
+            if (playerCardElement) playerCardElement.classList.add('victory');
+            botDeck[opponentSelectedCardIndex] = null;
+        } else if (result.winner === 'player2') {
+            message = `😢 ${botName} a gagné...`;
+            if (playerCardElement) playerCardElement.classList.add('defeat');
+            if (botCardElement) botCardElement.classList.add('victory');
+            playerDeck[mySelectedCardIndex] = null;
+        } else {
+            message = `Match nul !`;
+        }
+        
+        const battleInfo = document.getElementById('battleInfo');
+        if (battleInfo) battleInfo.style.display = 'block';
+        
+        updateGameInfo(message);
+        updateCardsCounter();
+        
+        setTimeout(() => checkMultiplayerGameEnd(), 3000);
+    });
+}
+
+// Vérifier la fin de partie multijoueur
+function checkMultiplayerGameEnd() {
+    const playerCardsLeft = playerDeck.filter(p => p !== null).length;
+    const botCardsLeft = botDeck.filter(p => p !== null).length;
+    
+    if (playerCardsLeft === 0) {
+        updateGameInfo("💀 Vous avez perdu ! L'adversaire a gagné !");
+        return;
+    }
+    
+    if (botCardsLeft === 0) {
+        updateGameInfo("🏆 Félicitations ! Vous avez gagné !");
+        return;
+    }
+    
+    // Réinitialiser pour le prochain round
+    selectedPlayerCard = null;
+    selectedBotCard = null;
+    mySelectedCardIndex = null;
+    opponentSelectedCardIndex = null;
+    
+    document.getElementById('playerCard').innerHTML = '<p>Choisissez votre Pokémon</p>';
+    document.getElementById('botCard').innerHTML = '<p>En attente...</p>';
+    document.getElementById('playerHealthBar').innerHTML = '';
+    document.getElementById('botHealthBar').innerHTML = '';
+    
+    displayDeck(playerDeck, 'playerDeck', true);
+    displayDeck(botDeck, 'botDeck', false);
+    
+    updateGameInfo("Choisissez votre prochain Pokémon !");
 }
 
 // Initialiser le jeu au chargement de la page
