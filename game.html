@@ -1,21 +1,43 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Datarena</title>
+    <link rel="stylesheet" href="./assets/css/styles.css">
+    <link rel="stylesheet" href="./assets/css/bibliotheque.css">
+    <link rel="stylesheet" href="./assets/css/game.css">
+    <title>Arène Pokémon</title>
 </head>
 <body>
-    <div class="arene">
-        <div>
+    <div class="game-container">
+        <!-- Deck adversaire (en haut) -->
+        <div class="bot-deck-area">
+            <h2>Adversaire</h2>
+            <div id="botDeck" class="deck"></div>
+        </div>
 
+        <!-- Zone de combat (au centre) -->
+        <div class="battle-arena">
+            <div id="botCard" class="battle-card-slot">
+                <p>Carte Bot</p>
+            </div>
+            <div class="vs-badge">VS</div>
+            <div id="playerCard" class="battle-card-slot">
+                <p>Carte Joueur</p>
+            </div>
         </div>
-        <div>
-            
+
+        <!-- Deck joueur (en bas) -->
+        <div class="player-deck-area">
+            <h2>Vos Pokémon</h2>
+            <div id="playerDeck" class="deck"></div>
         </div>
-        <div>
-            
+
+        <!-- Panneau d'informations -->
+        <div id="gameInfo" class="game-info">
+            <p>Choisissez votre Pokémon pour commencer!</p>
         </div>
     </div>
 </body>
+<script src="assets/js/game.js"></script>
 </html>
