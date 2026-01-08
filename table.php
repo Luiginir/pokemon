@@ -17,6 +17,16 @@ error_reporting(E_ALL);
 </head>
 
 <body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="index.html">Accueil</a></li>
+                <li><a href="bibliotheque.html">Pokédex</a></li>
+                <li><a href="table.php">Simulation</a></li>
+                <li><a href="game.html">Jouer</a></li>
+            </ul>
+        </nav>
+    </header>
     <h1>Simulation de combat</h1>
     <h3>Simulez votre combat Pokémon et voyez quelle est la meilleure combinaison</h3>
     <div class="select">
@@ -73,7 +83,7 @@ error_reporting(E_ALL);
             ?>
         </div>
     </div>
-    
+
     <div class="heatmap-section">
         <h2>Tableau de Comparaison (Heatmap)</h2>
         <p>Probabilité de victoire du Pokémon en ligne contre le Pokémon en colonne</p>
