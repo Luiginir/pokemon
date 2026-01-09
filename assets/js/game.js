@@ -226,7 +226,9 @@ function startBattle(pokemon1, pokemon2) {
             damage1: damage1,
             damage2: damage2,
             hp1: hp1,
-            hp2: hp2
+            hp2: hp2,
+            effectiveness1: attack1Result.effectiveness,
+            effectiveness2: attack2Result.effectiveness
         });
         
         console.log(`Tour ${turn}: ${pokemon1.Name} inflige ${damage1} dégâts, ${pokemon2.Name} inflige ${damage2} dégâts`);
@@ -600,6 +602,61 @@ function executeBattle(botIndex) {
     }, 500);
 }
 
+// Fonction pour afficher les dégâts avec animation
+function showDamage(target, damage, effectiveness) {
+    const targetSlot = document.getElementById(target === 'bot' ? 'botCard' : 'playerCard');
+    if (!targetSlot) return;
+    
+    const damageText = document.createElement('div');
+    damageText.className = 'damage-text';
+    
+    // Déterminer le style en fonction de l'efficacité
+    if (effectiveness >= 2) {
+        damageText.classList.add('super-effective');
+    } else if (effectiveness <= 0.5 && effectiveness > 0) {
+        damageText.classList.add('not-very-effective');
+    } else if (effectiveness === 0) {
+        damageText.classList.add('no-effect');
+        damageText.textContent = 'Aucun effet !';
+    }
+    
+    if (damage > 0) {
+        damageText.textContent = `-${damage}`;
+    } else if (effectiveness !== 0) {
+        damageText.textContent = 'Raté !';
+        damageText.classList.add('miss');
+    }
+    
+    targetSlot.appendChild(damageText);
+    
+    // Ajouter un message d'efficacité si nécessaire
+    if (effectiveness >= 2 || (effectiveness <= 0.5 && effectiveness > 0)) {
+        setTimeout(() => {
+            const effectivenessText = document.createElement('div');
+            effectivenessText.className = 'effectiveness-text';
+            
+            if (effectiveness >= 2) {
+                effectivenessText.textContent = "C'est super efficace !";
+                effectivenessText.classList.add('super');
+            } else {
+                effectivenessText.textContent = "Ce n'est pas très efficace...";
+                effectivenessText.classList.add('weak');
+            }
+            
+            targetSlot.appendChild(effectivenessText);
+            
+            setTimeout(() => {
+                effectivenessText.remove();
+            }, 1500);
+        }, 500);
+    }
+    
+    // Retirer le texte après l'animation
+    setTimeout(() => {
+        damageText.remove();
+    }, 1500);
+}
+
 // Fonction pour animer le combat
 function animateBattle(result, callback) {
     const playerCardElement = document.querySelector('#playerCard .card');
@@ -632,17 +689,21 @@ function animateBattle(result, callback) {
         const turnData = result.log[currentTurn];
         
         // Pour l'invité en multijoueur, inverser les dégâts et HP
-        let myHP, opponentHP, myDamage, opponentDamage;
+        let myHP, opponentHP, myDamage, opponentDamage, myEffectiveness, opponentEffectiveness;
         if (isMultiplayer && !isHost) {
             myHP = turnData.hp2;
             opponentHP = turnData.hp1;
             myDamage = turnData.damage2;
             opponentDamage = turnData.damage1;
+            myEffectiveness = turnData.effectiveness2 || 1;
+            opponentEffectiveness = turnData.effectiveness1 || 1;
         } else {
             myHP = turnData.hp1;
             opponentHP = turnData.hp2;
             myDamage = turnData.damage1;
             opponentDamage = turnData.damage2;
+            myEffectiveness = turnData.effectiveness1 || 1;
+            opponentEffectiveness = turnData.effectiveness2 || 1;
         }
         
         // Animation d'attaque du joueur
@@ -651,6 +712,8 @@ function animateBattle(result, callback) {
             setTimeout(() => {
                 playerCardElement?.classList.remove('attacking');
                 botCardElement.classList.add('damaged');
+                // Afficher les dégâts
+                showDamage('bot', myDamage, opponentEffectiveness);
                 // Mettre à jour la barre de vie du bot
                 updateHealthBar('bot', opponentHP, botMaxHP);
                 setTimeout(() => botCardElement.classList.remove('damaged'), 400);
@@ -664,6 +727,8 @@ function animateBattle(result, callback) {
                 setTimeout(() => {
                     botCardElement?.classList.remove('attacking');
                     playerCardElement.classList.add('damaged');
+                    // Afficher les dégâts
+                    showDamage('player', opponentDamage, myEffectiveness);
                     // Mettre à jour la barre de vie du joueur
                     updateHealthBar('player', myHP, playerMaxHP);
                     setTimeout(() => playerCardElement.classList.remove('damaged'), 400);
