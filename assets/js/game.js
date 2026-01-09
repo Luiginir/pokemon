@@ -25,6 +25,13 @@ let mySelectedCardIndex = null;
 let opponentSelectedCardIndex = null;
 let opponentHasSelected = false; // Savoir si l'adversaire a choisi sans voir sa carte
 
+// Variables pour le score
+let playerWins = 0;
+let opponentWins = 0;
+
+// Variable pour bloquer les sélections pendant un combat
+let battleInProgress = false;
+
 // Mapping manuel des Mega évolutions vers leurs IDs PokeAPI
 const megaMapping = {
     'Sceptile': '10065',
@@ -49,29 +56,101 @@ const megaMapping = {
     'Rayquaza': '10079'
 };
 
+// Table des multiplicateurs de types (attaquant vs défenseur)
+// 2 = super efficace, 1 = normal, 0.5 = peu efficace, 0 = inefficace
+const typeEffectiveness = {
+    normal: { normal: 1, fire: 1, water: 1, electric: 1, grass: 1, ice: 1, fighting: 1, poison: 1, ground: 1, flying: 1, psychic: 1, bug: 1, rock: 0.5, ghost: 0, dragon: 1, dark: 1, steel: 0.5, fairy: 1 },
+    fire: { normal: 1, fire: 0.5, water: 0.5, electric: 1, grass: 2, ice: 2, fighting: 1, poison: 1, ground: 1, flying: 1, psychic: 1, bug: 2, rock: 0.5, ghost: 1, dragon: 0.5, dark: 1, steel: 2, fairy: 1 },
+    water: { normal: 1, fire: 2, water: 0.5, electric: 1, grass: 0.5, ice: 1, fighting: 1, poison: 1, ground: 2, flying: 1, psychic: 1, bug: 1, rock: 2, ghost: 1, dragon: 0.5, dark: 1, steel: 1, fairy: 1 },
+    electric: { normal: 1, fire: 1, water: 2, electric: 0.5, grass: 0.5, ice: 1, fighting: 1, poison: 1, ground: 0, flying: 2, psychic: 1, bug: 1, rock: 1, ghost: 1, dragon: 0.5, dark: 1, steel: 1, fairy: 1 },
+    grass: { normal: 1, fire: 0.5, water: 2, electric: 1, grass: 0.5, ice: 1, fighting: 1, poison: 0.5, ground: 2, flying: 0.5, psychic: 1, bug: 0.5, rock: 2, ghost: 1, dragon: 0.5, dark: 1, steel: 0.5, fairy: 1 },
+    ice: { normal: 1, fire: 0.5, water: 0.5, electric: 1, grass: 2, ice: 0.5, fighting: 1, poison: 1, ground: 2, flying: 2, psychic: 1, bug: 1, rock: 1, ghost: 1, dragon: 2, dark: 1, steel: 0.5, fairy: 1 },
+    fighting: { normal: 2, fire: 1, water: 1, electric: 1, grass: 1, ice: 2, fighting: 1, poison: 0.5, ground: 1, flying: 0.5, psychic: 0.5, bug: 0.5, rock: 2, ghost: 0, dragon: 1, dark: 2, steel: 2, fairy: 0.5 },
+    poison: { normal: 1, fire: 1, water: 1, electric: 1, grass: 2, ice: 1, fighting: 1, poison: 0.5, ground: 0.5, flying: 1, psychic: 1, bug: 1, rock: 0.5, ghost: 0.5, dragon: 1, dark: 1, steel: 0, fairy: 2 },
+    ground: { normal: 1, fire: 2, water: 1, electric: 2, grass: 0.5, ice: 1, fighting: 1, poison: 2, ground: 1, flying: 0, psychic: 1, bug: 0.5, rock: 2, ghost: 1, dragon: 1, dark: 1, steel: 2, fairy: 1 },
+    flying: { normal: 1, fire: 1, water: 1, electric: 0.5, grass: 2, ice: 1, fighting: 2, poison: 1, ground: 1, flying: 1, psychic: 1, bug: 2, rock: 0.5, ghost: 1, dragon: 1, dark: 1, steel: 0.5, fairy: 1 },
+    psychic: { normal: 1, fire: 1, water: 1, electric: 1, grass: 1, ice: 1, fighting: 2, poison: 2, ground: 1, flying: 1, psychic: 0.5, bug: 1, rock: 1, ghost: 1, dragon: 1, dark: 0, steel: 0.5, fairy: 1 },
+    bug: { normal: 1, fire: 0.5, water: 1, electric: 1, grass: 2, ice: 1, fighting: 0.5, poison: 0.5, ground: 1, flying: 0.5, psychic: 2, bug: 1, rock: 1, ghost: 0.5, dragon: 1, dark: 2, steel: 0.5, fairy: 0.5 },
+    rock: { normal: 1, fire: 2, water: 1, electric: 1, grass: 1, ice: 2, fighting: 0.5, poison: 1, ground: 0.5, flying: 2, psychic: 1, bug: 2, rock: 1, ghost: 1, dragon: 1, dark: 1, steel: 0.5, fairy: 1 },
+    ghost: { normal: 0, fire: 1, water: 1, electric: 1, grass: 1, ice: 1, fighting: 1, poison: 1, ground: 1, flying: 1, psychic: 2, bug: 1, rock: 1, ghost: 2, dragon: 1, dark: 0.5, steel: 1, fairy: 1 },
+    dragon: { normal: 1, fire: 1, water: 1, electric: 1, grass: 1, ice: 1, fighting: 1, poison: 1, ground: 1, flying: 1, psychic: 1, bug: 1, rock: 1, ghost: 1, dragon: 2, dark: 1, steel: 0.5, fairy: 0 },
+    dark: { normal: 1, fire: 1, water: 1, electric: 1, grass: 1, ice: 1, fighting: 0.5, poison: 1, ground: 1, flying: 1, psychic: 2, bug: 1, rock: 1, ghost: 2, dragon: 1, dark: 0.5, steel: 1, fairy: 0.5 },
+    steel: { normal: 1, fire: 0.5, water: 0.5, electric: 0.5, grass: 1, ice: 2, fighting: 1, poison: 1, ground: 1, flying: 1, psychic: 1, bug: 1, rock: 2, ghost: 1, dragon: 1, dark: 1, steel: 0.5, fairy: 2 },
+    fairy: { normal: 1, fire: 0.5, water: 1, electric: 1, grass: 1, ice: 1, fighting: 2, poison: 0.5, ground: 1, flying: 1, psychic: 1, bug: 1, rock: 1, ghost: 1, dragon: 2, dark: 2, steel: 0.5, fairy: 1 }
+};
+
+// Fonction pour calculer le multiplicateur de type
+function getTypeEffectiveness(attackerType1, attackerType2, defenderType1, defenderType2) {
+    let multiplier = 1;
+    
+    // Attaquant type 1 vs défenseur type 1
+    if (typeEffectiveness[attackerType1] && typeEffectiveness[attackerType1][defenderType1]) {
+        multiplier *= typeEffectiveness[attackerType1][defenderType1];
+    }
+    
+    // Attaquant type 1 vs défenseur type 2 (si existe)
+    if (defenderType2 && typeEffectiveness[attackerType1] && typeEffectiveness[attackerType1][defenderType2]) {
+        multiplier *= typeEffectiveness[attackerType1][defenderType2];
+    }
+    
+    // Si l'attaquant a un type 2, calculer son effet aussi
+    if (attackerType2) {
+        let type2Multiplier = 1;
+        
+        if (typeEffectiveness[attackerType2] && typeEffectiveness[attackerType2][defenderType1]) {
+            type2Multiplier *= typeEffectiveness[attackerType2][defenderType1];
+        }
+        
+        if (defenderType2 && typeEffectiveness[attackerType2] && typeEffectiveness[attackerType2][defenderType2]) {
+            type2Multiplier *= typeEffectiveness[attackerType2][defenderType2];
+        }
+        
+        // Prendre la moyenne des deux types d'attaque
+        multiplier = (multiplier + type2Multiplier) / 2;
+    }
+    
+    return multiplier;
+}
+
 // Fonction pour calculer les HP totaux (PV uniquement, la défense sert maintenant à réduire les dégâts)
 function calculateTotalHP(pokemon) {
     return pokemon.HP;
 }
 
-// Fonction pour calculer les dégâts en tenant compte de la défense adverse
-function calculateDamage(attackPower, defense) {
-    // L'attaque doit être supérieure à la défense pour infliger des dégâts
-    if (attackPower <= defense) {
-        return 0; // Aucun dégât si l'attaque est inférieure ou égale à la défense
+// Fonction pour calculer les dégâts en tenant compte de la défense adverse et des types
+function calculateDamage(attacker, defender) {
+    // Utiliser la meilleure combinaison attaque/défense
+    // On compare Attaque physique vs Défense et Attaque Spéciale vs Défense Spéciale
+    const physicalDamage = attacker.Attack - defender.Defense;
+    const specialDamage = attacker['Sp. Atk'] - defender['Sp. Def'];
+    
+    // Utiliser la meilleure option (la plus élevée)
+    const baseDamage = Math.max(physicalDamage, specialDamage);
+    
+    // Si aucune attaque ne peut passer les défenses
+    if (baseDamage <= 0) {
+        return { damage: 0, effectiveness: 1 };
     }
     
-    // Dégâts de base = Attaque - Défense
-    const baseDamage = attackPower - defense;
+    // Calculer l'efficacité des types
+    const attackerType1 = attacker['Type 1'].toLowerCase();
+    const attackerType2 = attacker['Type 2'] && attacker['Type 2'].trim() !== '' ? attacker['Type 2'].toLowerCase() : null;
+    const defenderType1 = defender['Type 1'].toLowerCase();
+    const defenderType2 = defender['Type 2'] && defender['Type 2'].trim() !== '' ? defender['Type 2'].toLowerCase() : null;
+    
+    const typeMultiplier = getTypeEffectiveness(attackerType1, attackerType2, defenderType1, defenderType2);
     
     // Facteur aléatoire (85%-100%)
     const randomFactor = 0.85 + Math.random() * 0.15;
     
-    return Math.floor(baseDamage * randomFactor);
+    const finalDamage = Math.floor(baseDamage * typeMultiplier * randomFactor);
+    
+    return { damage: finalDamage, effectiveness: typeMultiplier };
 }
 
 // Fonction pour calculer la probabilité de victoire basée sur la puissance totale
 function calculateWinProbability(pokemon1, pokemon2) {
+    // Utiliser toutes les statistiques pour calculer la puissance
     const power1 = pokemon1.Attack + pokemon1.Defense + pokemon1.HP;
     const power2 = pokemon2.Attack + pokemon2.Defense + pokemon2.HP;
     const total = power1 + power2;
@@ -105,17 +184,39 @@ function startBattle(pokemon1, pokemon2) {
     while (turn < maxTurns && !winner) {
         turn++;
         
-        // Calcul des dégâts avec aléatoire et en tenant compte de la défense adverse
-        const damage1 = calculateDamage(pokemon1.Attack, pokemon2.Defense);
-        const damage2 = calculateDamage(pokemon2.Attack, pokemon1.Defense);
+        // Déterminer qui attaque en premier basé sur la vitesse
+        const pokemon1First = pokemon1.Speed >= pokemon2.Speed;
         
-        // Application des dégâts sur les HP actuels (continuité des HP)
-        hp2 = hp2 - damage1;
-        hp1 = hp1 - damage2;
+        // Calcul des dégâts avec aléatoire, défense et efficacité des types
+        const attack1Result = calculateDamage(pokemon1, pokemon2);
+        const attack2Result = calculateDamage(pokemon2, pokemon1);
+        let damage1 = attack1Result.damage;
+        let damage2 = attack2Result.damage;
         
-        // S'assurer que les HP ne descendent pas en dessous de 0
-        hp2 = Math.max(0, hp2);
-        hp1 = Math.max(0, hp1);
+        // Si pokemon1 est plus rapide, il attaque en premier
+        // Si pokemon2 est KO par la première attaque, il ne riposte pas
+        if (pokemon1First) {
+            hp2 = hp2 - damage1;
+            hp2 = Math.max(0, hp2);
+            // Si pokemon2 survit, il riposte
+            if (hp2 > 0) {
+                hp1 = hp1 - damage2;
+                hp1 = Math.max(0, hp1);
+            } else {
+                damage2 = 0; // Pokemon2 est KO, ne peut pas riposter
+            }
+        } else {
+            // pokemon2 attaque en premier
+            hp1 = hp1 - damage2;
+            hp1 = Math.max(0, hp1);
+            // Si pokemon1 survit, il riposte
+            if (hp1 > 0) {
+                hp2 = hp2 - damage1;
+                hp2 = Math.max(0, hp2);
+            } else {
+                damage1 = 0; // Pokemon1 est KO, ne peut pas riposter
+            }
+        }
         
         // Enregistrer le tour dans le log
         gameLog.push({
@@ -369,9 +470,10 @@ function displayDeck(deck, elementId, isPlayer) {
 
 // Fonction pour sélectionner une carte du joueur
 function selectPlayerCard(index) {
-    if (!isPlayerTurn || !playerDeck[index]) return;
+    if (!isPlayerTurn || !playerDeck[index] || battleInProgress) return;
     
     selectedPlayerCard = playerDeck[index];
+    battleInProgress = true;
     
     // Afficher la carte sélectionnée dans l'arène
     const playerCardSlot = document.getElementById('playerCard');
@@ -469,7 +571,8 @@ function executeBattle(botIndex) {
                 if (playerCardElement) playerCardElement.classList.add('victory');
                 // Retirer la carte du bot
                 botDeck[botIndex] = null;
-                updateCardsCounter();
+                playerWins++;
+                updateScoreCounter();
             } else if (result.winner === 'player2') {
                 message = `😢 ${botName} a gagné... (${result.turns} tours)`;
                 if (playerCardElement) playerCardElement.classList.add('defeat');
@@ -478,7 +581,8 @@ function executeBattle(botIndex) {
                 const playerIndex = playerDeck.indexOf(selectedPlayerCard);
                 if (playerIndex !== -1) {
                     playerDeck[playerIndex] = null;
-                    updateCardsCounter();
+                    opponentWins++;
+                    updateScoreCounter();
                 }
             } else {
                 message = `Match nul après ${result.turns} tours !`;
@@ -592,6 +696,7 @@ function checkGameEnd() {
     // Réinitialiser pour le prochain round
     selectedPlayerCard = null;
     selectedBotCard = null;
+    battleInProgress = false;
     
     // Vider les slots de combat
     document.getElementById('playerCard').innerHTML = '<p>Choisissez votre Pokémon</p>';
@@ -613,16 +718,13 @@ function updateGameInfo(message) {
     }
 }
 
-// Fonction pour mettre à jour les compteurs de cartes
-function updateCardsCounter() {
-    const playerCardsLeft = playerDeck.filter(p => p !== null).length;
-    const botCardsLeft = botDeck.filter(p => p !== null).length;
-    
+// Fonction pour mettre à jour les compteurs de manches gagnées
+function updateScoreCounter() {
     const playerCounter = document.querySelector('#playerCardsCounter .counter');
     const botCounter = document.querySelector('#botCardsCounter .counter');
     
-    if (playerCounter) playerCounter.textContent = playerCardsLeft;
-    if (botCounter) botCounter.textContent = botCardsLeft;
+    if (playerCounter) playerCounter.textContent = playerWins;
+    if (botCounter) botCounter.textContent = opponentWins;
 }
 
 // ==========================================
@@ -908,10 +1010,14 @@ function startSoloGame() {
     playerDeck = getRandomPokemons(9);
     botDeck = getRandomPokemons(9);
     
+    // Réinitialiser les scores
+    playerWins = 0;
+    opponentWins = 0;
+    
     displayDeck(playerDeck, 'playerDeck', true);
     displayDeck(botDeck, 'botDeck', false);
     
-    updateCardsCounter();
+    updateScoreCounter();
     updateGameInfo("Choisissez un Pokémon pour commencer le combat !");
 }
 
@@ -919,22 +1025,28 @@ function startSoloGame() {
 function startMultiplayerGame() {
     document.getElementById('multiplayerModal').classList.add('hidden');
     
+    // Réinitialiser les scores
+    playerWins = 0;
+    opponentWins = 0;
+    
     displayDeck(playerDeck, 'playerDeck', true);
     displayDeck(botDeck, 'botDeck', false);
     
-    updateCardsCounter();
+    updateScoreCounter();
     updateGameInfo("Choisissez un Pokémon pour combattre !");
     
     // Réinitialiser les sélections
     mySelectedCardIndex = null;
     opponentSelectedCardIndex = null;
     opponentHasSelected = false;
+    battleInProgress = false;
 }
 
 // Sélectionner une carte en multijoueur
 function selectPlayerCardMultiplayer(index) {
-    if (!playerDeck[index] || mySelectedCardIndex !== null) return;
+    if (!playerDeck[index] || mySelectedCardIndex !== null || battleInProgress) return;
     
+    battleInProgress = true;
     mySelectedCardIndex = index;
     selectedPlayerCard = playerDeck[index];
     
@@ -1048,10 +1160,12 @@ function handleBattleResult(result) {
             message = `🎉 ${playerName} a gagné !`;
             if (botCardElement) botCardElement.classList.add('defeat');
             if (playerCardElement) playerCardElement.classList.add('victory');
+            playerWins++;
         } else if (opponentWon) {
             message = `😢 ${botName} a gagné...`;
             if (playerCardElement) playerCardElement.classList.add('defeat');
             if (botCardElement) botCardElement.classList.add('victory');
+            opponentWins++;
         } else {
             message = `Match nul !`;
         }
@@ -1064,7 +1178,7 @@ function handleBattleResult(result) {
         if (battleInfo) battleInfo.style.display = 'block';
         
         updateGameInfo(message);
-        updateCardsCounter();
+        updateScoreCounter();
         
         setTimeout(() => checkMultiplayerGameEnd(), 3000);
     });

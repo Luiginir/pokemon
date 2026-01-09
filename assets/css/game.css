@@ -270,7 +270,7 @@ body {
     align-items: center;
     justify-content: center;
     font-size: 4rem;
-    color: rgba(255,255,255,0.3);
+    color: rgb(34, 34, 34);
     height: 100%;
 }
 
@@ -314,7 +314,7 @@ body {
 }
 
 .battle-card-slot p {
-    color: rgba(255,255,255,0.5);
+    color: rgb(51, 51, 51);
     font-size: 1.2rem;
     text-align: center;
 }
