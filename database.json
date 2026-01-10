@@ -1,4 +1,15 @@
 {
-  "users": {},
-  "userData": {}
+  "users": {
+    "test": {
+      "password": "$2a$10$S40k5FDDpBRx.pnNyl5HfOlxCHVzC4QDHYr.tZXJe8Zxp7Xu.gAPi",
+      "createdAt": "2026-01-10T15:31:12.384Z"
+    }
+  },
+  "userData": {
+    "test": {
+      "credits": 1000,
+      "unlockedPokemons": [],
+      "decks": []
+    }
+  }
 }

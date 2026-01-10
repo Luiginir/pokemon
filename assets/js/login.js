@@ -43,7 +43,7 @@ document.getElementById('formLogin').addEventListener('submit', async (e) => {
         if (response.ok) {
             showMessage('Connexion réussie ! Redirection...', 'success');
             setTimeout(() => {
-                window.location.href = '/';
+                window.location.href = '/index.html';
             }, 1000);
         } else {
             showMessage(data.error || 'Erreur de connexion', 'error');
@@ -61,6 +61,8 @@ document.getElementById('formLogin').addEventListener('submit', async (e) => {
 // Gestion de l'inscription
 document.getElementById('formRegister').addEventListener('submit', async (e) => {
     e.preventDefault();
+    
+    console.log('🔄 Tentative d\'inscription...');
     
     const username = document.getElementById('registerUsername').value.trim();
     const password = document.getElementById('registerPassword').value;
@@ -85,6 +87,8 @@ document.getElementById('formRegister').addEventListener('submit', async (e) => 
     submitBtn.disabled = true;
     submitBtn.textContent = 'Création du compte...';
     
+    console.log('📤 Envoi de la requête d\'inscription pour:', username);
+    
     try {
         const response = await fetch('/api/register', {
             method: 'POST',
@@ -94,12 +98,15 @@ document.getElementById('formRegister').addEventListener('submit', async (e) => 
             body: JSON.stringify({ username, password })
         });
         
+        console.log('📥 Réponse reçue:', response.status);
+        
         const data = await response.json();
+        console.log('📦 Données:', data);
         
         if (response.ok) {
             showMessage('Compte créé avec succès ! Redirection...', 'success');
             setTimeout(() => {
-                window.location.href = '/';
+                window.location.href = '/index.html';
             }, 1000);
         } else {
             showMessage(data.error || 'Erreur lors de la création du compte', 'error');
@@ -135,7 +142,7 @@ async function checkSession() {
         const data = await response.json();
         
         if (data.authenticated) {
-            window.location.href = '/';
+            window.location.href = '/index.html';
         }
     } catch (error) {
         console.error('Erreur de vérification de session:', error);
