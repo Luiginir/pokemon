@@ -94,7 +94,8 @@ h3 {
     transform-style: preserve-3d;
 }
 
-.card:hover .card-inner {
+.card:hover .card-inner,
+.card.flipped .card-inner {
     transform: rotateY(180deg);
 }
 
@@ -133,13 +134,7 @@ h3 {
 }
 
 .card-back::before {
-    top: -50%;
-}
-
-.card-front > *,
-.card-back > * {
-    position: relative;
-    z-index: 1;
+    top: -52%;
 }
 
 .card-front {
@@ -150,7 +145,8 @@ h3 {
     transform: rotateY(180deg);
     box-shadow: 2px 2px 12px rgba(0,0,0,0.1);
     justify-content: flex-start;
-    padding-top: 40px;
+    padding: 40px 16px 10px 16px;
+    gap: 5px;
 }
 
 .pokemon-id {
@@ -192,7 +188,7 @@ h3 {
 .card-back .pokemon-image {
     height: 120px;
     scale: 1.5;
-    margin: 10px 0;
+    margin: 10px;
 }
 
 .pokemon-image img {
@@ -261,7 +257,7 @@ h3 {
 }
 
 .card-back .type {
-    margin: 10px 0;
+    margin: 0;
     font-size: 1rem;
 }
 
@@ -271,7 +267,7 @@ h3 {
     transform: none;
     transition: none;
     width: 75%;
-    padding: 10px;
+    padding: 6px;
     border-radius: 6px;
     background: rgba(255, 255, 255, 0.1);
     display: flex;
@@ -281,7 +277,7 @@ h3 {
 }
 
 .card-back .stats p {
-    margin: 5px 0;
+    margin: 2px 0;
     font-size: 0.95rem;
 }
 
@@ -578,4 +574,184 @@ h3 {
 .normal .card-front::before,
 .normal .card-back::before {
     background-color: #919aa2;
+}
+
+/* ============================================
+   STYLES BOUTIQUE
+   ============================================ */
+
+/* Container des crédits */
+.credits-container {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.credits-box {
+    background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+    padding: 15px 30px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 3px solid #f0c000;
+}
+
+.credits-label {
+    font-size: 1.8rem;
+}
+
+.credits-display {
+    font-size: 2rem;
+    color: #866106;
+}
+
+
+/* Effet noir et blanc pour les Pokémons verrouillés */
+.card.locked {
+    filter: grayscale(100%) brightness(0.85);
+    opacity: 0.7;
+    transition: all 0.3s ease;
+}
+
+.card.locked:hover {
+    filter: grayscale(100%) brightness(0.95);
+    opacity: 0.8;
+}
+
+/* Badge de prix */
+.price-tag {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+    color: white;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-weight: bold;
+    margin-top: 10px;
+    font-size: 0.95rem;
+    box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+    display: inline-block;
+}
+
+/* Badge "Possédé" */
+.unlocked-badge {
+    background: linear-gradient(135deg, #51cf66 0%, #37b24d 100%);
+    color: white;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-weight: bold;
+    margin-top: 10px;
+    font-size: 0.95rem;
+    box-shadow: 0 2px 8px rgba(81, 207, 102, 0.3);
+    display: inline-block;
+}
+
+/* Message "Possédé" au dos de la carte */
+.owned-message {
+    background: linear-gradient(135deg, #51cf66 0%, #37b24d 100%);
+    color: white;
+    padding: 10px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+/* Bouton d'achat */
+.buy-button {
+    display: block;
+    background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+    border: 3px solid #f0c000;
+    color: #333;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(255, 215, 0, 0.3);
+    width: 90%;
+    margin: 12px auto 0;
+    text-align: center;
+    z-index: 10;
+}
+
+/* Empêcher le texte du bouton de bloquer les événements */
+.buy-button * {
+    pointer-events: none;
+}
+
+.buy-button:hover {
+    background: linear-gradient(135deg, #ffed4e 0%, #ffd700 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(255, 215, 0, 0.5);
+}
+
+.buy-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 5px rgba(255, 215, 0, 0.3);
+}
+
+/* Notifications */
+.notification {
+    position: fixed;
+    top: 100px;
+    right: -400px;
+    background: white;
+    padding: 20px 30px;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    font-size: 1.2rem;
+    font-weight: bold;
+    z-index: 10000;
+    transition: right 0.3s ease;
+    min-width: 300px;
+}
+
+.notification.show {
+    right: 30px;
+}
+
+.notification.success {
+    background: linear-gradient(135deg, #51cf66 0%, #37b24d 100%);
+    color: white;
+    border-left: 5px solid #2b8a3e;
+}
+
+.notification.error {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+    color: white;
+    border-left: 5px solid #c92a2a;
+}
+
+/* Animation de récompense de crédits */
+@keyframes creditPop {
+    0% {
+        transform: scale(0) translateY(0);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.2) translateY(-20px);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1) translateY(-40px);
+        opacity: 0;
+    }
+}
+
+.credit-reward {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 3rem;
+    font-weight: bold;
+    color: #ffd700;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    animation: creditPop 2s ease-out;
+    pointer-events: none;
+    z-index: 10000;
 }

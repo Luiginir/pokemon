@@ -59,3 +59,20 @@ nav ul a:hover {
     padding-inline: 20;
     transition: 0.2s;
 }
+
+/* Affichage des crédits dans la navbar */
+nav ul .credits-nav {
+    background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-weight: bold;
+    color: #333;
+    margin-left: 20px;
+    border: 2px solid #f0c000;
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+    font-size: 1.1rem;
+}
+
+nav ul .credits-nav .credits-display {
+    font-size: 1.3rem;
+}

@@ -12,14 +12,22 @@
         <nav>
             <ul>
                 <li><a href="index.html">Accueil</a></li>
-                <li><a href="bibliotheque.html">Pokédex</a></li>
+                <li><a href="bibliotheque.html">Boutique</a></li>
                 <li><a href="table.php">Simulation</a></li>
                 <li><a href="game.html">Jouer</a></li>
+                <li class="credits-nav">💰 <span class="credits-display">0</span></li>
             </ul>
         </nav>
     </header>
-    <h1>Bienvenue à la Bibliothèque Pokémon</h1>
-    <h3>Explorez les données des Pokémon et découvrez leurs caractéristiques.</h3>
+    <h1>Boutique Pokémon</h1>
+    <h3>Gagnez des combats pour obtenir des crédits et débloquer de nouveaux Pokémon !</h3>
+    
+    <div class="credits-container">
+        <div class="credits-box">
+            <span class="credits-label">💰 Crédits:</span>
+            <span class="credits-display">0</span>
+        </div>
+    </div>
     
     <div class="filter-container">
         <div class="search-section">
@@ -70,5 +78,6 @@
         </div>
     </div>
 </body>
+<script src="./assets/js/shop-system.js"></script>
 <script src="./assets/js/bibliotheque.js"></script>
 </html>

@@ -154,6 +154,43 @@ body {
     font-size: 2rem;
 }
 
+/* Info sur le nombre de Pokémons débloqués */
+.pokemon-count-info {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.pokemon-count-info p {
+    margin: 5px 0;
+    color: white;
+    font-weight: bold;
+}
+
+.pokemon-count-info p:first-child {
+    font-size: 1.3rem;
+    color: #ffd700;
+}
+
+.pokemon-count-info .info-text {
+    font-size: 0.9rem;
+    opacity: 0.8;
+    font-weight: normal;
+    margin-top: 10px;
+}
+
+.pokemon-count-info.warning {
+    background: rgba(255, 107, 107, 0.2);
+    border-color: #ff6b6b;
+}
+
+.pokemon-count-info.warning p:first-child {
+    color: #ff6b6b;
+}
+
 .game-mode-buttons {
     display: flex;
     flex-direction: column;
@@ -165,7 +202,7 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 20px;
+    padding: 10px;
     border: 2px solid rgba(255, 255, 255, 0.2);
     border-radius: 15px;
     background: rgba(255, 255, 255, 0.1);

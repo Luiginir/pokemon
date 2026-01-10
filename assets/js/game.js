@@ -468,6 +468,28 @@ async function initGame() {
             };
         });
         
+        // Afficher le nombre de Pokémons débloqués
+        if (typeof ShopSystem !== 'undefined') {
+            const unlockedCount = allPokemons.filter(p => ShopSystem.isPokemonUnlocked(p.Name)).length;
+            const totalCount = allPokemons.length;
+            console.log(`📊 Pokémons débloqués: ${unlockedCount}/${totalCount}`);
+            
+            // Mettre à jour l'affichage dans la modal
+            const unlockedCountElement = document.getElementById('unlockedCount');
+            if (unlockedCountElement) {
+                unlockedCountElement.textContent = unlockedCount;
+            }
+            
+            // Afficher un avertissement si pas assez de Pokémons
+            if (unlockedCount < 9) {
+                console.warn(`⚠️ Vous devez débloquer au moins 9 Pokémons pour jouer. Rendez-vous dans la Boutique !`);
+                const infoElement = document.querySelector('.pokemon-count-info');
+                if (infoElement) {
+                    infoElement.classList.add('warning');
+                }
+            }
+        }
+        
         // Initialiser le système multijoueur
         initMultiplayer();
         
@@ -478,7 +500,23 @@ async function initGame() {
 
 // Fonction pour obtenir des Pokémon aléatoires
 function getRandomPokemons(count) {
-    const shuffled = [...allPokemons].sort(() => Math.random() - 0.5);
+    // Filtrer pour ne garder que les Pokémons débloqués
+    let availablePokemons = allPokemons;
+    
+    if (typeof ShopSystem !== 'undefined') {
+        availablePokemons = allPokemons.filter(pokemon => 
+            ShopSystem.isPokemonUnlocked(pokemon.Name)
+        );
+        
+        // Si pas assez de Pokémons débloqués, avertir
+        if (availablePokemons.length < count) {
+            console.warn(`Seulement ${availablePokemons.length} Pokémons débloqués, impossible d'en avoir ${count}`);
+            // Utiliser tous les Pokémons disponibles
+            count = Math.min(count, availablePokemons.length);
+        }
+    }
+    
+    const shuffled = [...availablePokemons].sort(() => Math.random() - 0.5);
     return shuffled.slice(0, count);
 }
 
@@ -819,7 +857,16 @@ function checkGameEnd() {
     }
     
     if (botPokemonAlive === 0) {
-        updateGameInfo("🏆 Félicitations ! Vous avez vaincu tous les Pokémon adverses !");
+        // Le joueur a gagné ! Donner des crédits
+        if (typeof ShopSystem !== 'undefined') {
+            const reward = ShopSystem.rewardWin();
+            updateGameInfo(`🏆 Félicitations ! Vous avez vaincu tous les Pokémon adverses ! +${reward.creditsEarned} crédits !`);
+            
+            // Afficher une notification animée
+            showCreditReward(reward.creditsEarned);
+        } else {
+            updateGameInfo("🏆 Félicitations ! Vous avez vaincu tous les Pokémon adverses !");
+        }
         return;
     }
     
@@ -862,6 +909,18 @@ function updateScoreCounter() {
     
     if (playerCounter) playerCounter.textContent = playerPokemonAlive;
     if (botCounter) botCounter.textContent = botPokemonAlive;
+}
+
+// Fonction pour afficher une récompense de crédits animée
+function showCreditReward(amount) {
+    const rewardDiv = document.createElement('div');
+    rewardDiv.className = 'credit-reward';
+    rewardDiv.textContent = `+${amount} 💰`;
+    document.body.appendChild(rewardDiv);
+    
+    setTimeout(() => {
+        rewardDiv.remove();
+    }, 2000);
 }
 
 // ==========================================
@@ -1055,6 +1114,20 @@ function setupConnection() {
         console.log('Connexion établie avec un joueur !');
         showStatus('✅ Joueur connecté ! Lancement du jeu...', false);
         
+        // Vérifier qu'on a assez de Pokémons débloqués
+        if (typeof ShopSystem !== 'undefined') {
+            const unlockedPokemons = allPokemons.filter(pokemon => 
+                ShopSystem.isPokemonUnlocked(pokemon.Name)
+            );
+            
+            if (unlockedPokemons.length < 9) {
+                alert(`❌ Vous n'avez que ${unlockedPokemons.length} Pokémons débloqués.\nVous devez en débloquer au moins 9 pour jouer !\n\nRendez-vous dans la Boutique pour acheter plus de Pokémons.`);
+                conn.close();
+                document.getElementById('multiplayerModal').classList.remove('hidden');
+                return;
+            }
+        }
+        
         // L'hôte envoie les données du jeu
         setTimeout(() => {
             // Générer les decks
@@ -1151,6 +1224,20 @@ function showStatus(message, isError) {
 
 // Démarrer une partie solo
 function startSoloGame() {
+    // Vérifier qu'on a assez de Pokémons débloqués
+    if (typeof ShopSystem !== 'undefined') {
+        const unlockedPokemons = allPokemons.filter(pokemon => 
+            ShopSystem.isPokemonUnlocked(pokemon.Name)
+        );
+        
+        if (unlockedPokemons.length < 9) {
+            alert(`❌ Vous n'avez que ${unlockedPokemons.length} Pokémons débloqués.\nVous devez en débloquer au moins 9 pour jouer !\n\nRendez-vous dans la Boutique pour acheter plus de Pokémons.`);
+            // Retourner à la sélection de mode
+            document.getElementById('multiplayerModal').classList.remove('hidden');
+            return;
+        }
+    }
+    
     playerDeck = getRandomPokemons(9);
     botDeck = getRandomPokemons(9);
     

@@ -14,6 +14,10 @@
     <div id="multiplayerModal" class="modal">
         <div class="modal-content">
             <h2>🎮 Mode de jeu</h2>
+            <div id="pokemonCountInfo" class="pokemon-count-info">
+                <p>📊 <span id="unlockedCount">0</span> Pokémons débloqués</p>
+                <p class="info-text">Gagnez des combats pour obtenir des crédits et débloquer de nouveaux Pokémons dans la Boutique !</p>
+            </div>
             <div class="game-mode-buttons">
                 <button id="soloBtn" class="mode-btn">
                     <span class="mode-icon">🤖</span>
@@ -62,9 +66,10 @@
         <nav>
             <ul>
                 <li><a href="index.html">Accueil</a></li>
-                <li><a href="bibliotheque.html">Pokédex</a></li>
+                <li><a href="bibliotheque.html">Boutique</a></li>
                 <li><a href="table.php">Simulation</a></li>
                 <li><a href="game.html">Jouer</a></li>
+                <li class="credits-nav">💰 <span class="credits-display">0</span></li>
             </ul>
         </nav>
     </header>
@@ -114,5 +119,6 @@
         </div>
     </div>
 </body>
+<script src="assets/js/shop-system.js"></script>
 <script src="assets/js/game.js"></script>
 </html>

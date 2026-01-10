@@ -39,6 +39,10 @@ window.addEventListener('DOMContentLoaded', function() {
             allPokemonData = pokemonData;
             frenchNames = frenchNamesData;
             
+            // Initialiser les Pokémons de départ
+            ShopSystem.initializeStarterPokemon(allPokemonData);
+            ShopSystem.updateCreditsDisplay();
+            
             // Créer un map pour lier le nom anglais aux données françaises
             Object.entries(frenchNamesData).forEach(([dexNum, data]) => {
                 pokemonByName[data.name_en] = {
@@ -285,6 +289,16 @@ window.addEventListener('DOMContentLoaded', function() {
                 imageUrl = pokemonData ? pokemonData.image : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemonNumber}.png`;
             }
 
+            // Vérifier si le Pokémon est débloqué
+            const isUnlocked = ShopSystem.isPokemonUnlocked(pokemon.Name);
+            const price = ShopSystem.calculatePrice(pokemon);
+            const power = ShopSystem.calculatePower(pokemon);
+            
+            // Ajouter une classe pour les Pokémons verrouillés
+            if (!isUnlocked) {
+                card.classList.add('locked');
+            }
+
             card.innerHTML = `
                 <div class="card-inner">
                     <div class="card-front">
@@ -295,10 +309,11 @@ window.addEventListener('DOMContentLoaded', function() {
                                 <span>${pokemon.HP} PV</span>
                             </div>
                         </div>
-                        <div class="pokemon-image">
+                        <div class="pokemon-image ${!isUnlocked ? 'locked-image' : ''}">
                             <img src="${imageUrl}" alt="${displayName}" loading="lazy">
                         </div>
                         <h2>${displayName}</h2>
+                        ${!isUnlocked ? `<div class="price-tag">💰 ${price} crédits</div>` : '<div class="unlocked-badge">✓ Possédé</div>'}
                     </div>
                     <div class="card-back">
                         <div class="card-back-hp">
@@ -312,7 +327,13 @@ window.addEventListener('DOMContentLoaded', function() {
                         <div class="stats">
                             <p>Attaque: <b>${pokemon.Attack}</b></p>
                             <p>Défense: <b>${pokemon.Defense}</b></p>
+                            <p>Puissance: <b>${power}</b></p>
                         </div>
+                        ${!isUnlocked ? `
+                            <button class="buy-button" data-pokemon-name="${pokemon.Name}" data-price="${price}">
+                                ${price} 💰
+                            </button>
+                        ` : '<div class="owned-message"> ✓ Possédé</div>'}
                     </div>
                 </div>
             `;
@@ -320,5 +341,124 @@ window.addEventListener('DOMContentLoaded', function() {
             
             gridContainer.appendChild(card);
         });
+        
+        // Garder la carte retournée quand on survole le bouton d'achat
+        const cards = document.querySelectorAll('.card');
+        cards.forEach(card => {
+            const buyButton = card.querySelector('.buy-button');
+            if (buyButton) {
+                buyButton.addEventListener('mouseenter', function() {
+                    card.classList.add('flipped');
+                });
+                buyButton.addEventListener('mouseleave', function() {
+                    card.classList.remove('flipped');
+                });
+            }
+        });
+        
+        // Ajouter les gestionnaires d'événements pour les boutons d'achat
+        const buyButtons = document.querySelectorAll('.buy-button');
+        buyButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.stopPropagation(); // Empêcher le retournement de la carte
+                const pokemonName = this.getAttribute('data-pokemon-name');
+                const price = parseInt(this.getAttribute('data-price'));
+                
+                const result = ShopSystem.buyPokemon(pokemonName, price);
+                
+                if (result.success) {
+                    // Afficher un message de succès
+                    showNotification(result.message, 'success');
+                    // Rafraîchir l'affichage en utilisant les filtres actuels
+                    setTimeout(() => {
+                        const selectedType = typeFilter.value;
+                        const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+                        const sortOption = sortBy.value;
+                        
+                        let filteredData = allPokemonData;
+                        
+                        if (selectedType !== 'all') {
+                            filteredData = filteredData.filter(pokemon => pokemon['Type 1'] === selectedType);
+                        }
+                        
+                        if (searchQuery) {
+                            filteredData = filteredData.filter(pokemon => {
+                                let baseName = pokemon.Name;
+                                let isMega = false;
+                                if (pokemon.Name.includes('Mega')) {
+                                    baseName = pokemon.Name.split('Mega')[0];
+                                    isMega = true;
+                                }
+                                const pokemonData = pokemonByName[baseName];
+                                let frenchName = pokemonData ? pokemonData.name_fr : baseName;
+                                if (isMega) {
+                                    frenchName = 'Méga-' + frenchName;
+                                }
+                                return pokemon.Name.toLowerCase().includes(searchQuery) || 
+                                       frenchName.toLowerCase().includes(searchQuery) ||
+                                       (isMega && 'mega'.includes(searchQuery));
+                            });
+                        }
+                        
+                        filteredData = [...filteredData].sort((a, b) => {
+                            switch(sortOption) {
+                                case 'type':
+                                    return a['Type 1'].localeCompare(b['Type 1']);
+                                case 'name':
+                                    let baseNameA = a.Name.includes('Mega') ? a.Name.split('Mega')[0] : a.Name;
+                                    let baseNameB = b.Name.includes('Mega') ? b.Name.split('Mega')[0] : b.Name;
+                                    const dataA = pokemonByName[baseNameA];
+                                    const dataB = pokemonByName[baseNameB];
+                                    let nameA = dataA ? dataA.name_fr : baseNameA;
+                                    let nameB = dataB ? dataB.name_fr : baseNameB;
+                                    if (a.Name.includes('Mega')) nameA = 'Méga-' + nameA;
+                                    if (b.Name.includes('Mega')) nameB = 'Méga-' + nameB;
+                                    return nameA.localeCompare(nameB);
+                                case 'hp':
+                                    return b.HP - a.HP;
+                                case 'attack':
+                                    return b.Attack - a.Attack;
+                                case 'defense':
+                                    return b.Defense - a.Defense;
+                                default:
+                                    return 0;
+                            }
+                        });
+                        
+                        displayPokemons(filteredData);
+                    }, 500);
+                } else {
+                    // Afficher un message d'erreur
+                    showNotification(result.message, 'error');
+                }
+            });
+        });
+    }
+    
+    // Fonction pour afficher des notifications
+    function showNotification(message, type) {
+        // Supprimer les notifications existantes
+        const existing = document.querySelector('.notification');
+        if (existing) {
+            existing.remove();
+        }
+        
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
+        document.body.appendChild(notification);
+        
+        // Animation d'apparition
+        setTimeout(() => {
+            notification.classList.add('show');
+        }, 10);
+        
+        // Disparition après 3 secondes
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => {
+                notification.remove();
+            }, 300);
+        }, 3000);
     }
 });
