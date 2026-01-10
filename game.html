@@ -14,51 +14,64 @@
     <div id="multiplayerModal" class="modal">
         <div class="modal-content">
             <h2>🎮 Mode de jeu</h2>
-            <div id="pokemonCountInfo" class="pokemon-count-info">
-                <p>📊 <span id="unlockedCount">0</span> Pokémons débloqués</p>
-                <p class="info-text">Gagnez des combats pour obtenir des crédits et débloquer de nouveaux Pokémons dans la Boutique !</p>
-            </div>
-            <div class="game-mode-buttons">
-                <button id="soloBtn" class="mode-btn">
-                    <span class="mode-icon">🤖</span>
-                    <span class="mode-title">Solo vs Bot</span>
-                    <span class="mode-desc">Affrontez l'ordinateur</span>
-                </button>
-                <button id="hostBtn" class="mode-btn">
-                    <span class="mode-icon">🏠</span>
-                    <span class="mode-title">Créer une partie</span>
-                    <span class="mode-desc">Invitez un ami</span>
-                </button>
-                <button id="joinBtn" class="mode-btn">
-                    <span class="mode-icon">🔗</span>
-                    <span class="mode-title">Rejoindre</span>
-                    <span class="mode-desc">Rejoignez une partie</span>
-                </button>
-            </div>
-            
-            <!-- Section Hébergement -->
-            <div id="hostSection" class="connection-section hidden">
-                <h3>Partagez ce lien avec votre ami :</h3>
-                <div class="link-container">
-                    <input type="text" id="shareLink" readonly>
-                    <button id="copyLinkBtn">📋 Copier</button>
+            <div class="modal-body">
+                <div class="first-col">
+                    <div id="pokemonCountInfo" class="pokemon-count-info">
+                        <p>📊 <span id="unlockedCount">0</span> Pokémons débloqués</p>
+                        <p class="info-text">Gagnez des combats pour obtenir des crédits et débloquer de nouveaux Pokémons dans la Boutique !</p>
+                    </div>
+                    
+                    <!-- Sélection de deck -->
+                    <div id="deckSelection" class="deck-selection">
+                        <label for="deckSelector">Choisir un deck :</label>
+                        <select id="deckSelector">
+                            <option value="random">🎲 Deck aléatoire</option>
+                        </select>
+                    </div>
                 </div>
-                <p class="waiting-text">⏳ En attente d'un adversaire...</p>
-            </div>
-            
-            <!-- Section Rejoindre -->
-            <div id="joinSection" class="connection-section hidden">
-                <h3>Entrez le code de la partie :</h3>
-                <div class="join-container">
-                    <input type="text" id="gameCode" placeholder="Code de la partie">
-                    <button id="connectBtn">Rejoindre</button>
+                <div class="game-mode-buttons">
+                    <button id="soloBtn" class="mode-btn">
+                        <span class="mode-icon">🤖</span>
+                        <span class="mode-title">Solo vs Bot</span>
+                        <span class="mode-desc">Affrontez l'ordinateur</span>
+                    </button>
+                    <button id="hostBtn" class="mode-btn">
+                        <span class="mode-icon">🏠</span>
+                        <span class="mode-title">Créer une partie</span>
+                        <span class="mode-desc">Invitez un ami</span>
+                    </button>
+                    <button id="joinBtn" class="mode-btn">
+                        <span class="mode-icon">🔗</span>
+                        <span class="mode-title">Rejoindre</span>
+                        <span class="mode-desc">Rejoignez une partie</span>
+                    </button>
+                
+                    <!-- Section Hébergement -->
+                    <div id="hostSection" class="connection-section hidden">
+                        <h3>Partagez ce lien avec votre ami :</h3>
+                        <div class="link-container">
+                            <input type="text" id="shareLink" readonly>
+                            <button id="copyLinkBtn">📋 Copier</button>
+                        </div>
+                        <p class="waiting-text">⏳ En attente d'un adversaire...</p>
+                    </div>
+                    
+                    <!-- Section Rejoindre -->
+                    <div id="joinSection" class="connection-section hidden">
+                        <h3>Entrez le code de la partie :</h3>
+                        <div class="join-container">
+                            <input type="text" id="gameCode" placeholder="Code de la partie">
+                            <button id="connectBtn">Rejoindre</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Statut de connexion -->
+                    <div id="connectionStatus" class="connection-status hidden">
+                        <p id="statusText">Connexion en cours...</p>
+                    </div>
                 </div>
             </div>
-            
-            <!-- Statut de connexion -->
-            <div id="connectionStatus" class="connection-status hidden">
-                <p id="statusText">Connexion en cours...</p>
-            </div>
+
         </div>
     </div>
 
@@ -67,9 +80,12 @@
             <ul>
                 <li><a href="index.html">Accueil</a></li>
                 <li><a href="bibliotheque.html">Boutique</a></li>
+                <li><a href="deck-builder.html">Mes Decks</a></li>
                 <li><a href="table.php">Simulation</a></li>
                 <li><a href="game.html">Jouer</a></li>
                 <li class="credits-nav">💰 <span class="credits-display">0</span></li>
+                <li class="user-nav">👤 <span class="username-display"></span></li>
+                <li><button onclick="ShopSystem.logout()" class="logout-btn">Déconnexion</button></li>
             </ul>
         </nav>
     </header>

@@ -144,8 +144,7 @@ body {
     border-radius: 20px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
     text-align: center;
-    max-width: 500px;
-    width: 90%;
+    width: 75%;
     color: white;
 }
 
@@ -189,6 +188,57 @@ body {
 
 .pokemon-count-info.warning p:first-child {
     color: #ff6b6b;
+}
+
+/* Sélection de deck */
+.deck-selection {
+    margin-bottom: 25px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+}
+
+.deck-selection label {
+    display: block;
+    color: white;
+    font-weight: bold;
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+}
+
+.deck-selection select {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.9);
+    color: #333;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.deck-selection select:hover {
+    border-color: #4CAF50;
+    background: white;
+}
+
+.deck-selection select:focus {
+    outline: none;
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+}
+
+.modal-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.first-col {
+    margin-bottom: 20px;
 }
 
 .game-mode-buttons {

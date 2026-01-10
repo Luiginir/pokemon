@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./assets/css/styles.css">
+    <link rel="stylesheet" href="./assets/css/bibliotheque.css">
+    <link rel="stylesheet" href="./assets/css/deck-builder.css">
+    <title>Créateur de Decks Pokémon</title>
+</head>
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="index.html">Accueil</a></li>
+                <li><a href="bibliotheque.html">Boutique</a></li>
+                <li><a href="deck-builder.html">Mes Decks</a></li>
+                <li><a href="table.php">Simulation</a></li>
+                <li><a href="game.html">Jouer</a></li>
+                <li class="credits-nav">💰 <span class="credits-display">0</span></li>
+                <li class="user-nav">👤 <span class="username-display"></span></li>
+                <li><button onclick="ShopSystem.logout()" class="logout-btn">Déconnexion</button></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <h1>⚔️ Créateur de Decks</h1>
+    <h3>Créez vos decks personnalisés avec vos Pokémons favoris !</h3>
+    
+    <div class="deck-builder-container">
+        <!-- Liste des decks existants -->
+        <div class="decks-list-section">
+            <h2>📚 Mes Decks</h2>
+            <button id="newDeckBtn" class="new-deck-btn">➕ Nouveau Deck</button>
+            <div id="decksList" class="decks-list"></div>
+        </div>
+        
+        <!-- Éditeur de deck -->
+        <div id="deckEditor" class="deck-editor hidden">
+            <div class="editor-header">
+                <h2 id="editorTitle">Nouveau Deck</h2>
+                <button id="closeEditorBtn" class="close-btn">✕</button>
+            </div>
+            
+            <div class="deck-info">
+                <label for="deckName">Nom du deck :</label>
+                <input type="text" id="deckName" placeholder="Ex: Mon équipe de feu" maxlength="30">
+                
+                <div class="deck-counter">
+                    <span>Pokémons sélectionnés : <strong id="selectedCount">0</strong> / 9</span>
+                </div>
+            </div>
+            
+            <div class="deck-slots">
+                <h3>Composition du deck</h3>
+                <div id="deckSlots" class="slots-grid"></div>
+            </div>
+            
+            <div class="pokemon-selector">
+                <h3>Sélectionnez vos Pokémons</h3>
+                <div class="filter-bar">
+                    <input type="text" id="pokemonSearch" placeholder="Rechercher un Pokémon...">
+                    <select id="typeFilterDeck">
+                        <option value="all">Tous les types</option>
+                        <option value="Grass">Plante</option>
+                        <option value="Fire">Feu</option>
+                        <option value="Water">Eau</option>
+                        <option value="Electric">Électrik</option>
+                        <option value="Psychic">Psy</option>
+                        <option value="Ice">Glace</option>
+                        <option value="Dragon">Dragon</option>
+                        <option value="Dark">Ténèbres</option>
+                        <option value="Fairy">Fée</option>
+                        <option value="Poison">Poison</option>
+                        <option value="Ground">Sol</option>
+                        <option value="Flying">Vol</option>
+                        <option value="Bug">Insecte</option>
+                        <option value="Rock">Roche</option>
+                        <option value="Ghost">Spectre</option>
+                        <option value="Steel">Acier</option>
+                        <option value="Normal">Normal</option>
+                        <option value="Fighting">Combat</option>
+                    </select>
+                </div>
+                <div id="pokemonGrid" class="pokemon-grid"></div>
+            </div>
+            
+            <div class="editor-actions">
+                <button id="saveDeckBtn" class="save-btn">💾 Sauvegarder</button>
+                <button id="cancelBtn" class="cancel-btn">Annuler</button>
+            </div>
+        </div>
+    </div>
+</body>
+<script src="./assets/js/shop-system.js"></script>
+<script src="./assets/js/deck-builder.js"></script>
+</html>

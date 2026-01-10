@@ -1,91 +1,100 @@
-// Système de boutique et de crédits pour le jeu Pokémon
+// Système de boutique et de crédits pour le jeu Pokémon avec API Backend
 
 const ShopSystem = {
-    // Clés pour le localStorage
-    CREDITS_KEY: 'pokemon_credits',
-    UNLOCKED_KEY: 'pokemon_unlocked',
-    
     // Configuration
     STARTING_CREDITS: 1000,
     CREDITS_PER_WIN: 100,
+    DECK_SIZE: 9,
+    
+    // État en cache
+    cachedData: null,
+    currentUser: null,
     
     // Initialiser le système
-    init() {
-        // Vérifier si c'est la première fois
-        if (localStorage.getItem(this.CREDITS_KEY) === null) {
-            this.initializeFirstTime();
+    async init() {
+        try {
+            // Vérifier la session
+            const sessionResponse = await fetch('/api/session');
+            const sessionData = await sessionResponse.json();
+            
+            if (!sessionData.authenticated) {
+                window.location.href = '/login.html';
+                return;
+            }
+            
+            this.currentUser = sessionData.username;
+            
+            // Charger les données utilisateur
+            await this.loadUserData();
+            
+            // Mettre à jour l'affichage
+            this.updateCreditsDisplay();
+            this.updateUserDisplay();
+        } catch (error) {
+            console.error('Erreur d\'initialisation:', error);
         }
     },
     
-    // Initialisation au premier lancement
-    initializeFirstTime() {
-        // Donner des crédits de départ
-        localStorage.setItem(this.CREDITS_KEY, this.STARTING_CREDITS);
-        
-        // Débloquer les 10 Pokémons les plus faibles
-        // On va les identifier au moment du chargement des données
-        localStorage.setItem(this.UNLOCKED_KEY, JSON.stringify([]));
+    // Charger les données utilisateur depuis l'API
+    async loadUserData() {
+        try {
+            const response = await fetch('/api/userdata');
+            if (response.ok) {
+                this.cachedData = await response.json();
+                return this.cachedData;
+            } else if (response.status === 401) {
+                window.location.href = '/login.html';
+            }
+        } catch (error) {
+            console.error('Erreur de chargement des données:', error);
+        }
+        return null;
     },
     
     // Obtenir les crédits actuels
     getCredits() {
-        const credits = localStorage.getItem(this.CREDITS_KEY);
-        return credits ? parseInt(credits) : this.STARTING_CREDITS;
+        if (this.cachedData) {
+            return this.cachedData.credits || 0;
+        }
+        return 0;
     },
     
     // Ajouter des crédits
-    addCredits(amount) {
-        const currentCredits = this.getCredits();
-        const newCredits = currentCredits + amount;
-        localStorage.setItem(this.CREDITS_KEY, newCredits);
-        this.updateCreditsDisplay();
-        return newCredits;
-    },
-    
-    // Retirer des crédits
-    removeCredits(amount) {
-        const currentCredits = this.getCredits();
-        if (currentCredits >= amount) {
-            const newCredits = currentCredits - amount;
-            localStorage.setItem(this.CREDITS_KEY, newCredits);
-            this.updateCreditsDisplay();
-            return true;
+    async addCredits(amount) {
+        const newCredits = this.getCredits() + amount;
+        try {
+            const response = await fetch('/api/credits', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ amount: newCredits })
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                this.cachedData.credits = data.credits;
+                this.updateCreditsDisplay();
+                return data.credits;
+            }
+        } catch (error) {
+            console.error('Erreur d\'ajout de crédits:', error);
         }
-        return false;
+        return this.getCredits();
     },
     
     // Obtenir la liste des Pokémons débloqués
     getUnlockedPokemon() {
-        const unlocked = localStorage.getItem(this.UNLOCKED_KEY);
-        return unlocked ? JSON.parse(unlocked) : [];
+        if (this.cachedData) {
+            return this.cachedData.unlockedPokemons || [];
+        }
+        return [];
     },
     
     // Vérifier si un Pokémon est débloqué
     isPokemonUnlocked(pokemonName) {
         const unlocked = this.getUnlockedPokemon();
         return unlocked.includes(pokemonName);
-    },
-    
-    // Débloquer un Pokémon
-    unlockPokemon(pokemonName) {
-        const unlocked = this.getUnlockedPokemon();
-        if (!unlocked.includes(pokemonName)) {
-            unlocked.push(pokemonName);
-            localStorage.setItem(this.UNLOCKED_KEY, JSON.stringify(unlocked));
-            return true;
-        }
-        return false;
-    },
-    
-    // Débloquer plusieurs Pokémons
-    unlockMultiplePokemon(pokemonNames) {
-        const unlocked = this.getUnlockedPokemon();
-        pokemonNames.forEach(name => {
-            if (!unlocked.includes(name)) {
-                unlocked.push(name);
-            }
-        });
-        localStorage.setItem(this.UNLOCKED_KEY, JSON.stringify(unlocked));
     },
     
     // Calculer la puissance d'un Pokémon (somme des stats)
@@ -103,7 +112,7 @@ const ShopSystem = {
     },
     
     // Acheter un Pokémon
-    buyPokemon(pokemonName, price) {
+    async buyPokemon(pokemonName, price) {
         if (this.isPokemonUnlocked(pokemonName)) {
             return { success: false, message: 'Vous possédez déjà ce Pokémon!' };
         }
@@ -112,12 +121,29 @@ const ShopSystem = {
             return { success: false, message: 'Crédits insuffisants!' };
         }
         
-        if (this.removeCredits(price)) {
-            this.unlockPokemon(pokemonName);
-            return { success: true, message: `${pokemonName} débloqué!` };
+        try {
+            const response = await fetch('/api/unlock-pokemon', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ pokemonName, price })
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                this.cachedData.credits = data.credits;
+                this.cachedData.unlockedPokemons = data.unlockedPokemons;
+                this.updateCreditsDisplay();
+                return { success: true, message: `${pokemonName} débloqué!` };
+            } else {
+                const error = await response.json();
+                return { success: false, message: error.error || 'Erreur lors de l\'achat' };
+            }
+        } catch (error) {
+            console.error('Erreur d\'achat:', error);
+            return { success: false, message: 'Erreur de connexion' };
         }
-        
-        return { success: false, message: 'Erreur lors de l\'achat.' };
     },
     
     // Mettre à jour l'affichage des crédits sur toutes les pages
@@ -129,8 +155,16 @@ const ShopSystem = {
         });
     },
     
+    // Mettre à jour l'affichage du nom d'utilisateur
+    updateUserDisplay() {
+        const userElements = document.querySelectorAll('.username-display');
+        userElements.forEach(el => {
+            el.textContent = this.currentUser || '';
+        });
+    },
+    
     // Initialiser les Pokémons de départ (les 10 plus faibles)
-    initializeStarterPokemon(allPokemons) {
+    async initializeStarterPokemon(allPokemons) {
         const unlocked = this.getUnlockedPokemon();
         
         // Si on a déjà des Pokémons débloqués, ne rien faire
@@ -146,24 +180,171 @@ const ShopSystem = {
         // Prendre les 10 premiers (les plus faibles)
         const starters = sortedByPower.slice(0, 10).map(p => p.Name);
         
-        // Les débloquer
-        this.unlockMultiplePokemon(starters);
-        
-        console.log('Pokémons de départ débloqués:', starters);
+        // Les débloquer via l'API
+        try {
+            const response = await fetch('/api/unlocked-pokemons', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ pokemons: starters })
+            });
+            
+            if (response.ok) {
+                this.cachedData.unlockedPokemons = starters;
+                console.log('🎁 Pokémons de départ débloqués:', starters);
+            }
+        } catch (error) {
+            console.error('Erreur d\'initialisation des Pokémons de départ:', error);
+        }
     },
     
     // Récompense après une victoire
-    rewardWin() {
+    async rewardWin() {
         const creditsEarned = this.CREDITS_PER_WIN;
-        const newTotal = this.addCredits(creditsEarned);
+        const newTotal = await this.addCredits(creditsEarned);
         return { creditsEarned, newTotal };
     },
     
-    // Réinitialiser le système (pour debug)
-    reset() {
-        localStorage.removeItem(this.CREDITS_KEY);
-        localStorage.removeItem(this.UNLOCKED_KEY);
-        this.initializeFirstTime();
+    // Déconnexion
+    async logout() {
+        try {
+            await fetch('/api/logout', { method: 'POST' });
+            window.location.href = '/login.html';
+        } catch (error) {
+            console.error('Erreur de déconnexion:', error);
+        }
+    },
+    
+    // ==================== GESTION DES DECKS ====================
+    
+    // Créer un nouveau deck
+    async createDeck(name, pokemonNames) {
+        // Validation
+        if (!name || name.trim() === '') {
+            return { success: false, message: 'Le nom du deck est requis' };
+        }
+        
+        if (!Array.isArray(pokemonNames) || pokemonNames.length !== this.DECK_SIZE) {
+            return { success: false, message: `Un deck doit contenir exactement ${this.DECK_SIZE} Pokémons` };
+        }
+        
+        // Vérifier que tous les Pokémons sont débloqués
+        const unlockedPokemons = this.getUnlockedPokemon();
+        const allUnlocked = pokemonNames.every(name => unlockedPokemons.includes(name));
+        
+        if (!allUnlocked) {
+            return { success: false, message: 'Certains Pokémons ne sont pas débloqués' };
+        }
+        
+        try {
+            const response = await fetch('/api/decks', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name: name.trim(), pokemons: pokemonNames })
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                // Mettre à jour le cache
+                if (!this.cachedData.decks) {
+                    this.cachedData.decks = [];
+                }
+                this.cachedData.decks.push(data.deck);
+                return { success: true, message: 'Deck créé avec succès!', deck: data.deck };
+            } else {
+                const error = await response.json();
+                return { success: false, message: error.error || 'Erreur lors de la création' };
+            }
+        } catch (error) {
+            console.error('Erreur de création de deck:', error);
+            return { success: false, message: 'Erreur de connexion' };
+        }
+    },
+    
+    // Mettre à jour un deck
+    async updateDeck(deckId, name, pokemonNames) {
+        // Validation
+        if (!name || name.trim() === '') {
+            return { success: false, message: 'Le nom du deck est requis' };
+        }
+        
+        if (!Array.isArray(pokemonNames) || pokemonNames.length !== this.DECK_SIZE) {
+            return { success: false, message: `Un deck doit contenir exactement ${this.DECK_SIZE} Pokémons` };
+        }
+        
+        // Vérifier que tous les Pokémons sont débloqués
+        const unlockedPokemons = this.getUnlockedPokemon();
+        const allUnlocked = pokemonNames.every(name => unlockedPokemons.includes(name));
+        
+        if (!allUnlocked) {
+            return { success: false, message: 'Certains Pokémons ne sont pas débloqués' };
+        }
+        
+        try {
+            const response = await fetch(`/api/decks/${deckId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name: name.trim(), pokemons: pokemonNames })
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                // Mettre à jour le cache
+                const deckIndex = this.cachedData.decks.findIndex(d => d.id === deckId);
+                if (deckIndex !== -1) {
+                    this.cachedData.decks[deckIndex] = data.deck;
+                }
+                return { success: true, message: 'Deck mis à jour!', deck: data.deck };
+            } else {
+                const error = await response.json();
+                return { success: false, message: error.error || 'Erreur lors de la mise à jour' };
+            }
+        } catch (error) {
+            console.error('Erreur de mise à jour de deck:', error);
+            return { success: false, message: 'Erreur de connexion' };
+        }
+    },
+    
+    // Supprimer un deck
+    async deleteDeck(deckId) {
+        try {
+            const response = await fetch(`/api/decks/${deckId}`, {
+                method: 'DELETE'
+            });
+            
+            if (response.ok) {
+                // Mettre à jour le cache
+                this.cachedData.decks = this.cachedData.decks.filter(d => d.id !== deckId);
+                return { success: true, message: 'Deck supprimé!' };
+            } else {
+                const error = await response.json();
+                return { success: false, message: error.error || 'Erreur lors de la suppression' };
+            }
+        } catch (error) {
+            console.error('Erreur de suppression de deck:', error);
+            return { success: false, message: 'Erreur de connexion' };
+        }
+    },
+    
+    // Obtenir un deck par ID
+    getDeckById(deckId) {
+        if (!this.cachedData || !this.cachedData.decks) {
+            return null;
+        }
+        return this.cachedData.decks.find(d => d.id === parseInt(deckId));
+    },
+    
+    // Obtenir tous les decks
+    getDecks() {
+        if (!this.cachedData || !this.cachedData.decks) {
+            return [];
+        }
+        return this.cachedData.decks;
     }
 };
 
@@ -171,6 +352,5 @@ const ShopSystem = {
 if (typeof window !== 'undefined') {
     window.addEventListener('DOMContentLoaded', () => {
         ShopSystem.init();
-        ShopSystem.updateCreditsDisplay();
     });
 }

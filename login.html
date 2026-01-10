@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - Pokémon Battle</title>
+    <link rel="stylesheet" href="assets/css/login.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <h1>⚔️ Pokémon Battle</h1>
+            <p class="subtitle">Connectez-vous pour accéder à votre collection</p>
+            
+            <div id="message" class="message hidden"></div>
+            
+            <div id="loginForm" class="form-container">
+                <h2>Connexion</h2>
+                <form id="formLogin">
+                    <div class="form-group">
+                        <label for="loginUsername">Nom d'utilisateur</label>
+                        <input type="text" id="loginUsername" name="username" required autocomplete="username">
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword">Mot de passe</label>
+                        <input type="password" id="loginPassword" name="password" required autocomplete="current-password">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Se connecter</button>
+                </form>
+                <p class="switch-form">
+                    Pas de compte ? <a href="#" id="showRegister">Créer un compte</a>
+                </p>
+            </div>
+            
+            <div id="registerForm" class="form-container hidden">
+                <h2>Inscription</h2>
+                <form id="formRegister">
+                    <div class="form-group">
+                        <label for="registerUsername">Nom d'utilisateur</label>
+                        <input type="text" id="registerUsername" name="username" required autocomplete="username">
+                    </div>
+                    <div class="form-group">
+                        <label for="registerPassword">Mot de passe</label>
+                        <input type="password" id="registerPassword" name="password" required minlength="6" autocomplete="new-password">
+                        <small>Minimum 6 caractères</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerPasswordConfirm">Confirmer le mot de passe</label>
+                        <input type="password" id="registerPasswordConfirm" name="passwordConfirm" required minlength="6" autocomplete="new-password">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Créer mon compte</button>
+                </form>
+                <p class="switch-form">
+                    Déjà un compte ? <a href="#" id="showLogin">Se connecter</a>
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <script src="assets/js/login.js"></script>
+</body>
+</html>

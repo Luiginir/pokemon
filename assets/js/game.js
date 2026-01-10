@@ -480,6 +480,9 @@ async function initGame() {
                 unlockedCountElement.textContent = unlockedCount;
             }
             
+            // Charger les decks dans le sélecteur
+            loadDecksIntoSelector();
+            
             // Afficher un avertissement si pas assez de Pokémons
             if (unlockedCount < 9) {
                 console.warn(`⚠️ Vous devez débloquer au moins 9 Pokémons pour jouer. Rendez-vous dans la Boutique !`);
@@ -496,6 +499,47 @@ async function initGame() {
     } catch (error) {
         console.error('Erreur lors du chargement des Pokémon:', error);
     }
+}
+
+// Charger les decks dans le sélecteur
+function loadDecksIntoSelector() {
+    const selector = document.getElementById('deckSelector');
+    if (!selector) return;
+    
+    const decks = ShopSystem.getDecks();
+    
+    // Réinitialiser le sélecteur
+    selector.innerHTML = '<option value="random">🎲 Deck aléatoire</option>';
+    
+    // Ajouter chaque deck
+    decks.forEach(deck => {
+        const option = document.createElement('option');
+        option.value = deck.id;
+        option.textContent = `⚔️ ${deck.name}`;
+        selector.appendChild(option);
+    });
+}
+
+// Obtenir les Pokémons selon le deck sélectionné
+function getSelectedDeck() {
+    const selector = document.getElementById('deckSelector');
+    if (!selector) return null;
+    
+    const selectedValue = selector.value;
+    
+    if (selectedValue === 'random') {
+        return null; // Utiliser le système aléatoire
+    }
+    
+    const deckId = parseInt(selectedValue);
+    const deck = ShopSystem.getDeckById(deckId);
+    
+    if (!deck) return null;
+    
+    // Convertir les noms de Pokémons en objets Pokémon complets
+    return deck.pokemons.map(name => {
+        return allPokemons.find(p => p.Name === name);
+    }).filter(p => p !== undefined);
 }
 
 // Fonction pour obtenir des Pokémon aléatoires
@@ -1130,8 +1174,18 @@ function setupConnection() {
         
         // L'hôte envoie les données du jeu
         setTimeout(() => {
-            // Générer les decks
-            playerDeck = getRandomPokemons(9);
+            // Vérifier si un deck personnalisé est sélectionné
+            const selectedDeck = getSelectedDeck();
+            
+            if (selectedDeck && selectedDeck.length === 9) {
+                // Utiliser le deck personnalisé pour l'hôte
+                playerDeck = selectedDeck;
+            } else {
+                // Utiliser un deck aléatoire
+                playerDeck = getRandomPokemons(9);
+            }
+            
+            // Le deck de l'adversaire est toujours aléatoire
             botDeck = getRandomPokemons(9);
             
             // Initialiser les HP
@@ -1238,7 +1292,18 @@ function startSoloGame() {
         }
     }
     
-    playerDeck = getRandomPokemons(9);
+    // Vérifier si un deck personnalisé est sélectionné
+    const selectedDeck = getSelectedDeck();
+    
+    if (selectedDeck && selectedDeck.length === 9) {
+        // Utiliser le deck personnalisé pour le joueur
+        playerDeck = selectedDeck;
+    } else {
+        // Utiliser un deck aléatoire
+        playerDeck = getRandomPokemons(9);
+    }
+    
+    // Le bot utilise toujours un deck aléatoire
     botDeck = getRandomPokemons(9);
     
     // Initialiser les HP de tous les Pokémon

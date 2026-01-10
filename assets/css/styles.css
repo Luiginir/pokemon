@@ -76,3 +76,38 @@ nav ul .credits-nav {
 nav ul .credits-nav .credits-display {
     font-size: 1.3rem;
 }
+
+/* Affichage de l'utilisateur dans la navbar */
+nav ul .user-nav {
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-weight: 500;
+    color: #333;
+    margin-left: 10px;
+    background: rgba(255, 255, 255, 0.7);
+    border: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Bouton de déconnexion */
+.logout-btn {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-left: 10px;
+    font-size: 0.95rem;
+}
+
+.logout-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(238, 90, 111, 0.4);
+    background: linear-gradient(135deg, #ff5252 0%, #ee4a6f 100%);
+}
+
+.logout-btn:active {
+    transform: translateY(0);
+}
