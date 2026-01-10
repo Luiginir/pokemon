@@ -366,6 +366,36 @@ body {
     transform: none !important;
 }
 
+/* Pokémon KO */
+.card.ko-pokemon {
+    opacity: 0.6;
+    filter: grayscale(80%);
+    cursor: not-allowed !important;
+    position: relative;
+}
+
+.card.ko-pokemon:hover {
+    transform: none !important;
+}
+
+.ko-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 3rem;
+    font-weight: bold;
+    color: #ff0000;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9),
+                 -2px -2px 0 #fff,
+                 2px -2px 0 #fff,
+                 -2px 2px 0 #fff,
+                 2px 2px 0 #fff;
+    z-index: 10;
+    pointer-events: none;
+    letter-spacing: 3px;
+}
+
 /* Cartes du bot (face cachée) */
 .bot-deck-area .card {
     background: linear-gradient(145deg, #2c3e50, #34495e);
@@ -554,10 +584,10 @@ body {
 /* Panneau d'informations de combat (bas centre) */
 .battle-info {
     position: fixed;
-    bottom: 30px;
+    top: 75px;
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(0,0,0,0.85);
+    background: rgba(0,0,0,0.75);
     color: white;
     padding: 12px 30px;
     border-radius: 25px;
@@ -713,6 +743,27 @@ body {
     padding: 3px 6px !important;
     font-size: 0.65rem !important;
     top: -25% !important;
+}
+
+/* Barre de HP sur les cartes */
+.card-hp-bar {
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 2px;
+    margin: 0 auto;
+    overflow: hidden;
+    position: relative;
+}
+
+.card-hp-bar-fill {
+    height: 100%;
+    transition: width 0.3s ease, background-color 0.3s ease;
+    border-radius: 2px;
+}
+
+.deck .card-hp-bar {
+    z-index: 2;
+    height: 5px;
+    width: 85%;
 }
 
 .deck .card .card-back-hp {

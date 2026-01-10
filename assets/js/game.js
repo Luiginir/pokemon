@@ -7,11 +7,15 @@ let gameLog = [];
 // Variables pour la gestion du jeu
 let playerDeck = [];
 let botDeck = []; // Aussi utilisé pour le deck de l'adversaire en multijoueur
+let playerDeckHP = []; // HP actuels de chaque Pokémon du joueur
+let botDeckHP = []; // HP actuels de chaque Pokémon du bot
 let allPokemons = [];
 let pokemonsFrench = {};
 let pokemonByName = {}; // Map pour lier nom anglais -> données françaises
 let selectedPlayerCard = null;
 let selectedBotCard = null;
+let selectedPlayerIndex = null;
+let selectedBotIndex = null;
 let isPlayerTurn = true;
 
 // Variables multijoueur
@@ -162,12 +166,12 @@ function calculateWinProbability(pokemon1, pokemon2) {
 }
 
 // Fonction principale de combat
-function startBattle(pokemon1, pokemon2) {
+function startBattle(pokemon1, pokemon2, currentHP1 = null, currentHP2 = null) {
     gameLog = [];
     
-    // Calcul des HP totaux initiaux
-    let hp1 = calculateTotalHP(pokemon1);
-    let hp2 = calculateTotalHP(pokemon2);
+    // Utiliser les HP actuels si fournis, sinon HP max
+    let hp1 = currentHP1 !== null ? currentHP1 : calculateTotalHP(pokemon1);
+    let hp2 = currentHP2 !== null ? currentHP2 : calculateTotalHP(pokemon2);
     
     // Calcul des probabilités de victoire
     const probabilities = calculateWinProbability(pokemon1, pokemon2);
@@ -295,13 +299,24 @@ const typeNames = {
 // Fonction pour créer une barre de vie
 function createHealthBar(owner) {
     const maxHP = owner === 'player' ? calculateTotalHP(selectedPlayerCard) : calculateTotalHP(selectedBotCard);
+    const currentHP = owner === 'player' ? playerDeckHP[selectedPlayerIndex] : botDeckHP[selectedBotIndex];
+    const percentage = Math.max(0, (currentHP / maxHP) * 100);
+    
+    // Déterminer la couleur de la barre
+    let barColor = '#4CAF50';
+    if (percentage <= 50 && percentage > 25) {
+        barColor = '#FFA726';
+    } else if (percentage <= 25) {
+        barColor = '#EF5350';
+    }
+    
     return `
         <div class="health-bar-container" data-owner="${owner}">
             <div class="health-bar-bg">
-                <div class="health-bar-fill" data-max-hp="${maxHP}" style="width: 100%;"></div>
+                <div class="health-bar-fill" data-max-hp="${maxHP}" style="width: ${percentage}%; background-color: ${barColor};"></div>
             </div>
             <div class="health-bar-text">
-                <span class="current-hp">${maxHP}</span> / <span class="max-hp">${maxHP}</span> PV
+                <span class="current-hp">${currentHP}</span> / <span class="max-hp">${maxHP}</span> PV
             </div>
         </div>
     `;
@@ -330,7 +345,7 @@ function updateHealthBar(owner, currentHP, maxHP) {
 }
 
 // Fonction pour générer le HTML d'une carte
-function createCardHTML(pokemon, index) {
+function createCardHTML(pokemon, index, isKO = false, currentHP = null) {
     const primaryType = pokemon['Type 1'].toLowerCase();
     const hasSecondType = pokemon['Type 2'] && pokemon['Type 2'].trim() !== '';
     const secondaryType = hasSecondType ? pokemon['Type 2'].toLowerCase() : null;
@@ -372,17 +387,43 @@ function createCardHTML(pokemon, index) {
         ? `<img src="${typeIcons[secondaryType]}" alt="${secondaryType}" class="type-icon type-icon-${secondaryType}">`
         : '';
     
+    const koClass = isKO ? 'ko-pokemon' : '';
+    const koOverlay = isKO ? '<div class="ko-overlay">KO</div>' : '';
+    
+    // Calculer les HP à afficher
+    const maxHP = pokemon.HP;
+    const displayHP = currentHP !== null ? currentHP : maxHP;
+    const hpPercentage = (displayHP / maxHP) * 100;
+    
+    // Détecter couleur de la barre HP
+    let hpBarColor = '#4CAF50';
+    if (hpPercentage <= 50 && hpPercentage > 25) {
+        hpBarColor = '#FFA726';
+    } else if (hpPercentage <= 25) {
+        hpBarColor = '#EF5350';
+    }
+    
+    const hpBarHTML = currentHP !== null ? `
+        <div class="card-hp-bar">
+            <div class="card-hp-bar-fill" style="width: ${hpPercentage}%; background-color: ${hpBarColor};"></div>
+        </div>
+    ` : '';
+    
+    const hpDisplayText = currentHP !== null ? `${displayHP}/${maxHP} PV` : `${maxHP} PV`;
+    
     return `
-        <div class="card ${primaryType}" data-index="${index}">
+        <div class="card ${primaryType} ${koClass}" data-index="${index}">
+            ${koOverlay}
             <div class="card-inner">
                 <div class="card-front">
                     <div class="card-front-header">
                         <span class="pokemon-id">#${pokemonNumber}</span>
                         <div class="pokemon-hp-front">
                             ${primaryTypeIconHTML}
-                            <span>${pokemon.HP} PV</span>
+                            <span>${hpDisplayText}</span>
                         </div>
                     </div>
+                    ${hpBarHTML}
                     <div class="pokemon-image">
                         <img src="${pokemonImage}" alt="${pokemonName}">
                     </div>
@@ -446,9 +487,13 @@ function displayDeck(deck, elementId, isPlayer) {
     const deckElement = document.getElementById(elementId);
     deckElement.innerHTML = '';
     
+    const hpArray = isPlayer ? playerDeckHP : botDeckHP;
+    
     deck.forEach((pokemon, index) => {
         if (pokemon) {
-            const cardHTML = createCardHTML(pokemon, index);
+            const isKO = hpArray[index] <= 0;
+            const currentHP = hpArray[index];
+            const cardHTML = createCardHTML(pokemon, index, isKO, currentHP);
             deckElement.innerHTML += cardHTML;
         }
     });
@@ -474,7 +519,14 @@ function displayDeck(deck, elementId, isPlayer) {
 function selectPlayerCard(index) {
     if (!isPlayerTurn || !playerDeck[index] || battleInProgress) return;
     
+    // Vérifier que le Pokémon n'est pas KO
+    if (playerDeckHP[index] <= 0) {
+        updateGameInfo("Ce Pokémon est KO ! Choisissez-en un autre.");
+        return;
+    }
+    
     selectedPlayerCard = playerDeck[index];
+    selectedPlayerIndex = index;
     battleInProgress = true;
     
     // Afficher la carte sélectionnée dans l'arène
@@ -498,12 +550,13 @@ function selectPlayerCard(index) {
 
 // Fonction pour que le bot sélectionne une carte
 function selectBotCard() {
-    // Le bot sélectionne une carte aléatoire parmi celles disponibles
-    const availableIndices = botDeck.map((p, i) => p ? i : null).filter(i => i !== null);
+    // Le bot sélectionne une carte aléatoire parmi celles disponibles ET vivantes
+    const availableIndices = botDeck.map((p, i) => (p && botDeckHP[i] > 0) ? i : null).filter(i => i !== null);
     if (availableIndices.length === 0) return;
     
     const randomIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
     selectedBotCard = botDeck[randomIndex];
+    selectedBotIndex = randomIndex;
     
     // Afficher la carte du bot dans l'arène
     const botCardSlot = document.getElementById('botCard');
@@ -533,7 +586,13 @@ function executeBattle(botIndex) {
         const battleInfo = document.getElementById('battleInfo');
         if (battleInfo) battleInfo.style.display = 'none';
         
-        const result = startBattle(selectedPlayerCard, selectedBotCard);
+        // Lancer le combat avec les HP actuels
+        const result = startBattle(
+            selectedPlayerCard, 
+            selectedBotCard,
+            playerDeckHP[selectedPlayerIndex],
+            botDeckHP[botIndex]
+        );
         
         // Animer le combat
         animateBattle(result, () => {
@@ -565,27 +624,30 @@ function executeBattle(botIndex) {
                 botName = 'Méga-' + botName;
             }
             
+            // Mettre à jour les HP des Pokémon
+            // Pour l'invité en multijoueur, inverser les HP
+            if (isMultiplayer && !isHost) {
+                playerDeckHP[selectedPlayerIndex] = result.finalHP.hp2;
+                botDeckHP[botIndex] = result.finalHP.hp1;
+            } else {
+                playerDeckHP[selectedPlayerIndex] = result.finalHP.hp1;
+                botDeckHP[botIndex] = result.finalHP.hp2;
+            }
+            
             // Afficher le résultat
             let message = '';
             if (result.winner === 'player1') {
                 message = `🎉 ${playerName} a gagné ! (${result.turns} tours)`;
                 if (botCardElement) botCardElement.classList.add('defeat');
                 if (playerCardElement) playerCardElement.classList.add('victory');
-                // Retirer la carte du bot
-                botDeck[botIndex] = null;
-                playerWins++;
+                // Le Pokémon du bot est KO, ses HP sont déjà à 0
                 updateScoreCounter();
             } else if (result.winner === 'player2') {
                 message = `😢 ${botName} a gagné... (${result.turns} tours)`;
                 if (playerCardElement) playerCardElement.classList.add('defeat');
                 if (botCardElement) botCardElement.classList.add('victory');
-                // Retirer la carte du joueur
-                const playerIndex = playerDeck.indexOf(selectedPlayerCard);
-                if (playerIndex !== -1) {
-                    playerDeck[playerIndex] = null;
-                    opponentWins++;
-                    updateScoreCounter();
-                }
+                // Le Pokémon du joueur est KO, ses HP sont déjà à 0
+                updateScoreCounter();
             } else {
                 message = `Match nul après ${result.turns} tours !`;
             }
@@ -662,11 +724,13 @@ function animateBattle(result, callback) {
     const playerCardElement = document.querySelector('#playerCard .card');
     const botCardElement = document.querySelector('#botCard .card');
     
-    // Initialiser les barres de vie
+    // Initialiser les barres de vie avec les HP actuels
     const playerMaxHP = calculateTotalHP(selectedPlayerCard);
     const botMaxHP = calculateTotalHP(selectedBotCard);
-    updateHealthBar('player', playerMaxHP, playerMaxHP);
-    updateHealthBar('bot', botMaxHP, botMaxHP);
+    const playerCurrentHP = playerDeckHP[selectedPlayerIndex];
+    const botCurrentHP = botDeckHP[selectedBotIndex];
+    updateHealthBar('player', playerCurrentHP, playerMaxHP);
+    updateHealthBar('bot', botCurrentHP, botMaxHP);
     
     let currentTurn = 0;
     const turnDelay = 1500; // Augmenté de 800 à 1500ms pour des combats plus longs
@@ -745,22 +809,25 @@ function animateBattle(result, callback) {
 
 // Fonction pour vérifier si le jeu est terminé
 function checkGameEnd() {
-    const playerCardsLeft = playerDeck.filter(p => p !== null).length;
-    const botCardsLeft = botDeck.filter(p => p !== null).length;
+    // Compter les Pokémon encore en vie (HP > 0)
+    const playerPokemonAlive = playerDeck.filter((p, i) => p !== null && playerDeckHP[i] > 0).length;
+    const botPokemonAlive = botDeck.filter((p, i) => p !== null && botDeckHP[i] > 0).length;
     
-    if (playerCardsLeft === 0) {
-        updateGameInfo("💀 Vous avez perdu ! Le bot a gagné la partie.");
+    if (playerPokemonAlive === 0) {
+        updateGameInfo("💀 Vous avez perdu ! Tous vos Pokémon sont KO !");
         return;
     }
     
-    if (botCardsLeft === 0) {
-        updateGameInfo("🏆 Félicitations ! Vous avez gagné la partie !");
+    if (botPokemonAlive === 0) {
+        updateGameInfo("🏆 Félicitations ! Vous avez vaincu tous les Pokémon adverses !");
         return;
     }
     
     // Réinitialiser pour le prochain round
     selectedPlayerCard = null;
     selectedBotCard = null;
+    selectedPlayerIndex = null;
+    selectedBotIndex = null;
     battleInProgress = false;
     
     // Vider les slots de combat
@@ -769,7 +836,8 @@ function checkGameEnd() {
     document.getElementById('playerHealthBar').innerHTML = '';
     document.getElementById('botHealthBar').innerHTML = '';
     
-    // Mettre à jour l'affichage du deck du bot
+    // Mettre à jour l'affichage des decks
+    displayDeck(playerDeck, 'playerDeck', true);
     displayDeck(botDeck, 'botDeck', false);
     
     updateGameInfo("Choisissez votre prochain Pokémon !");
@@ -783,13 +851,17 @@ function updateGameInfo(message) {
     }
 }
 
-// Fonction pour mettre à jour les compteurs de manches gagnées
+// Fonction pour mettre à jour les compteurs de Pokémon vivants
 function updateScoreCounter() {
     const playerCounter = document.querySelector('#playerCardsCounter .counter');
     const botCounter = document.querySelector('#botCardsCounter .counter');
     
-    if (playerCounter) playerCounter.textContent = playerWins;
-    if (botCounter) botCounter.textContent = opponentWins;
+    // Compter les Pokémon encore en vie
+    const playerPokemonAlive = playerDeck.filter((p, i) => p !== null && playerDeckHP[i] > 0).length;
+    const botPokemonAlive = botDeck.filter((p, i) => p !== null && botDeckHP[i] > 0).length;
+    
+    if (playerCounter) playerCounter.textContent = playerPokemonAlive;
+    if (botCounter) botCounter.textContent = botPokemonAlive;
 }
 
 // ==========================================
@@ -989,6 +1061,10 @@ function setupConnection() {
             playerDeck = getRandomPokemons(9);
             botDeck = getRandomPokemons(9);
             
+            // Initialiser les HP
+            playerDeckHP = playerDeck.map(p => calculateTotalHP(p));
+            botDeckHP = botDeck.map(p => calculateTotalHP(p));
+            
             // Envoyer les decks à l'adversaire (inversés pour lui)
             sendMessage({
                 type: 'init',
@@ -1026,6 +1102,9 @@ function handleMessage(data) {
             // Invité reçoit les decks (inversés)
             playerDeck = data.guestDeck;
             botDeck = data.hostDeck;
+            // Initialiser les HP
+            playerDeckHP = playerDeck.map(p => calculateTotalHP(p));
+            botDeckHP = botDeck.map(p => calculateTotalHP(p));
             startMultiplayerGame();
             break;
             
@@ -1075,6 +1154,10 @@ function startSoloGame() {
     playerDeck = getRandomPokemons(9);
     botDeck = getRandomPokemons(9);
     
+    // Initialiser les HP de tous les Pokémon
+    playerDeckHP = playerDeck.map(p => calculateTotalHP(p));
+    botDeckHP = botDeck.map(p => calculateTotalHP(p));
+    
     // Réinitialiser les scores
     playerWins = 0;
     opponentWins = 0;
@@ -1089,6 +1172,10 @@ function startSoloGame() {
 // Démarrer une partie multijoueur
 function startMultiplayerGame() {
     document.getElementById('multiplayerModal').classList.add('hidden');
+    
+    // Initialiser les HP de tous les Pokémon
+    playerDeckHP = playerDeck.map(p => calculateTotalHP(p));
+    botDeckHP = botDeck.map(p => calculateTotalHP(p));
     
     // Réinitialiser les scores
     playerWins = 0;
@@ -1111,9 +1198,16 @@ function startMultiplayerGame() {
 function selectPlayerCardMultiplayer(index) {
     if (!playerDeck[index] || mySelectedCardIndex !== null || battleInProgress) return;
     
+    // Vérifier que le Pokémon n'est pas KO
+    if (playerDeckHP[index] <= 0) {
+        updateGameInfo("Ce Pokémon est KO ! Choisissez-en un autre.");
+        return;
+    }
+    
     battleInProgress = true;
     mySelectedCardIndex = index;
     selectedPlayerCard = playerDeck[index];
+    selectedPlayerIndex = index;
     
     // Afficher ma carte
     const playerCardSlot = document.getElementById('playerCard');
@@ -1145,6 +1239,7 @@ function selectPlayerCardMultiplayer(index) {
 
 // Révéler la carte de l'adversaire
 function revealOpponentCard() {
+    selectedBotIndex = opponentSelectedCardIndex;
     const botCardSlot = document.getElementById('botCard');
     botCardSlot.innerHTML = createCardHTML(selectedBotCard, opponentSelectedCardIndex);
     
@@ -1235,9 +1330,16 @@ function handleBattleResult(result) {
             message = `Match nul !`;
         }
         
-        // Retirer les deux cartes jouées (les cartes ne sont jamais récupérées)
-        playerDeck[mySelectedCardIndex] = null;
-        botDeck[opponentSelectedCardIndex] = null;
+        // Mettre à jour les HP des Pokémon
+        // Pour l'hôte: player1 = lui, player2 = adversaire
+        // Pour l'invité: player1 = adversaire, player2 = lui
+        if (isHost) {
+            playerDeckHP[mySelectedCardIndex] = result.finalHP.hp1;
+            botDeckHP[opponentSelectedCardIndex] = result.finalHP.hp2;
+        } else {
+            playerDeckHP[mySelectedCardIndex] = result.finalHP.hp2;
+            botDeckHP[opponentSelectedCardIndex] = result.finalHP.hp1;
+        }
         
         const battleInfo = document.getElementById('battleInfo');
         if (battleInfo) battleInfo.style.display = 'block';
@@ -1251,25 +1353,29 @@ function handleBattleResult(result) {
 
 // Vérifier la fin de partie multijoueur
 function checkMultiplayerGameEnd() {
-    const playerCardsLeft = playerDeck.filter(p => p !== null).length;
-    const botCardsLeft = botDeck.filter(p => p !== null).length;
+    // Compter les Pokémon encore en vie
+    const playerPokemonAlive = playerDeck.filter((p, i) => p !== null && playerDeckHP[i] > 0).length;
+    const botPokemonAlive = botDeck.filter((p, i) => p !== null && botDeckHP[i] > 0).length;
     
-    if (playerCardsLeft === 0) {
-        updateGameInfo("💀 Vous avez perdu ! L'adversaire a gagné !");
+    if (playerPokemonAlive === 0) {
+        updateGameInfo("💀 Vous avez perdu ! Tous vos Pokémon sont KO !");
         return;
     }
     
-    if (botCardsLeft === 0) {
-        updateGameInfo("🏆 Félicitations ! Vous avez gagné !");
+    if (botPokemonAlive === 0) {
+        updateGameInfo("🏆 Félicitations ! Vous avez vaincu tous les Pokémon adverses !");
         return;
     }
     
     // Réinitialiser pour le prochain round
     selectedPlayerCard = null;
     selectedBotCard = null;
+    selectedPlayerIndex = null;
+    selectedBotIndex = null;
     mySelectedCardIndex = null;
     opponentSelectedCardIndex = null;
     opponentHasSelected = false;
+    battleInProgress = false;
     
     document.getElementById('playerCard').innerHTML = '<p>Choisissez votre Pokémon</p>';
     document.getElementById('botCard').innerHTML = '<p>En attente...</p>';
