@@ -80,7 +80,26 @@
 
         </div>
     </div>
+    
+    <!-- Carte flottante pour les stats -->
+    <div id="statsCard" class="stats-card-popup" style="display: none;">
+        <div class="stats-card-header">
+            <h3 id="statsCardTitle"></h3>
+            <span id="statsCardPower"></span>
+        </div>
+        <div class="stats-card-content">
+            <canvas id="statsRadarChart"></canvas>
+            <div class="win-rate-section">
+                <div class="win-rate-label">Taux de victoire</div>
+                <div class="win-rate-value" id="winRateValue">0%</div>
+                <div class="win-rate-bar">
+                    <div class="win-rate-fill" id="winRateFill"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="./assets/js/shop-system.js"></script>
 <script src="./assets/js/bibliotheque.js"></script>
 </html>

@@ -6,6 +6,17 @@ window.addEventListener('DOMContentLoaded', function() {
     let frenchNames = {};
     let pokemonByName = {}; // Map pour lier nom anglais -> données françaises
     
+    // Variables pour la carte flottante des stats
+    const statsCard = document.getElementById('statsCard');
+    const statsCardTitle = document.getElementById('statsCardTitle');
+    const statsCardPower = document.getElementById('statsCardPower');
+    const winRateValue = document.getElementById('winRateValue');
+    const winRateFill = document.getElementById('winRateFill');
+    let radarChart = null;
+    let currentHoveredCard = null;
+    let hideTimeout = null;
+    let showTimeout = null;
+    
     // Mapping manuel des Mega évolutions vers leurs IDs PokeAPI
     const megaMapping = {
         'Sceptile': '10065',
@@ -340,6 +351,25 @@ window.addEventListener('DOMContentLoaded', function() {
 
             
             gridContainer.appendChild(card);
+            
+            // Ajouter l'événement de hover pour afficher la carte des stats
+            card.addEventListener('mouseenter', function(e) {
+                // Annuler tout timeout de masquage en cours
+                if (hideTimeout) {
+                    clearTimeout(hideTimeout);
+                    hideTimeout = null;
+                }
+                
+                currentHoveredCard = card;
+                showStatsCard(pokemon, displayName, power, card);
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                if (currentHoveredCard === card) {
+                    hideStatsCard();
+                    currentHoveredCard = null;
+                }
+            });
         });
         
         // Garder la carte retournée quand on survole le bouton d'achat
@@ -460,5 +490,211 @@ window.addEventListener('DOMContentLoaded', function() {
                 notification.remove();
             }, 300);
         }, 3000);
+    }
+    
+    // Fonction pour calculer le taux de victoire d'un Pokémon
+    function calculateWinRate(pokemon) {
+        let wins = 0;
+        let total = allPokemonData.length - 1; // -1 pour exclure le Pokémon lui-même
+        
+        allPokemonData.forEach(opponent => {
+            if (opponent.Name === pokemon.Name) return;
+            
+            // Simuler un combat simple basé sur les stats
+            const pokemonPower = pokemon.HP + pokemon.Attack + pokemon.Defense + pokemon['Sp. Atk'] + pokemon['Sp. Def'] + pokemon.Speed;
+            const opponentPower = opponent.HP + opponent.Attack + opponent.Defense + opponent['Sp. Atk'] + opponent['Sp. Def'] + opponent.Speed;
+            
+            // Facteur de type (bonus si avantage de type)
+            let typeAdvantage = 1;
+            const typeMatchups = getTypeAdvantage(pokemon['Type 1'], opponent['Type 1']);
+            typeAdvantage *= typeMatchups;
+            
+            if (pokemon['Type 2']) {
+                const type2Matchups = getTypeAdvantage(pokemon['Type 2'], opponent['Type 1']);
+                typeAdvantage *= type2Matchups;
+            }
+            
+            const adjustedPower = pokemonPower * typeAdvantage;
+            
+            if (adjustedPower > opponentPower) {
+                wins++;
+            }
+        });
+        
+        return Math.round((wins / total) * 100);
+    }
+    
+    // Fonction simplifiée pour obtenir l'avantage de type
+    function getTypeAdvantage(attackType, defenseType) {
+        const advantages = {
+            'Fire': { 'Grass': 2, 'Ice': 2, 'Bug': 2, 'Steel': 2, 'Water': 0.5, 'Fire': 0.5, 'Rock': 0.5, 'Dragon': 0.5 },
+            'Water': { 'Fire': 2, 'Ground': 2, 'Rock': 2, 'Water': 0.5, 'Grass': 0.5, 'Dragon': 0.5 },
+            'Grass': { 'Water': 2, 'Ground': 2, 'Rock': 2, 'Fire': 0.5, 'Grass': 0.5, 'Poison': 0.5, 'Flying': 0.5, 'Bug': 0.5, 'Dragon': 0.5, 'Steel': 0.5 },
+            'Electric': { 'Water': 2, 'Flying': 2, 'Electric': 0.5, 'Grass': 0.5, 'Dragon': 0.5, 'Ground': 0 },
+            'Psychic': { 'Fighting': 2, 'Poison': 2, 'Psychic': 0.5, 'Steel': 0.5, 'Dark': 0 },
+            'Ice': { 'Grass': 2, 'Ground': 2, 'Flying': 2, 'Dragon': 2, 'Fire': 0.5, 'Water': 0.5, 'Ice': 0.5, 'Steel': 0.5 },
+            'Dragon': { 'Dragon': 2, 'Steel': 0.5, 'Fairy': 0 },
+            'Dark': { 'Psychic': 2, 'Ghost': 2, 'Fighting': 0.5, 'Dark': 0.5, 'Fairy': 0.5 },
+            'Fairy': { 'Fighting': 2, 'Dragon': 2, 'Dark': 2, 'Fire': 0.5, 'Poison': 0.5, 'Steel': 0.5 },
+            'Fighting': { 'Normal': 2, 'Ice': 2, 'Rock': 2, 'Dark': 2, 'Steel': 2, 'Poison': 0.5, 'Flying': 0.5, 'Psychic': 0.5, 'Bug': 0.5, 'Fairy': 0.5, 'Ghost': 0 },
+            'Poison': { 'Grass': 2, 'Fairy': 2, 'Poison': 0.5, 'Ground': 0.5, 'Rock': 0.5, 'Ghost': 0.5, 'Steel': 0 },
+            'Ground': { 'Fire': 2, 'Electric': 2, 'Poison': 2, 'Rock': 2, 'Steel': 2, 'Grass': 0.5, 'Bug': 0.5, 'Flying': 0 },
+            'Flying': { 'Grass': 2, 'Fighting': 2, 'Bug': 2, 'Electric': 0.5, 'Rock': 0.5, 'Steel': 0.5 },
+            'Bug': { 'Grass': 2, 'Psychic': 2, 'Dark': 2, 'Fire': 0.5, 'Fighting': 0.5, 'Poison': 0.5, 'Flying': 0.5, 'Ghost': 0.5, 'Steel': 0.5, 'Fairy': 0.5 },
+            'Rock': { 'Fire': 2, 'Ice': 2, 'Flying': 2, 'Bug': 2, 'Fighting': 0.5, 'Ground': 0.5, 'Steel': 0.5 },
+            'Ghost': { 'Psychic': 2, 'Ghost': 2, 'Dark': 0.5, 'Normal': 0 },
+            'Steel': { 'Ice': 2, 'Rock': 2, 'Fairy': 2, 'Fire': 0.5, 'Water': 0.5, 'Electric': 0.5, 'Steel': 0.5 },
+            'Normal': { 'Rock': 0.5, 'Steel': 0.5, 'Ghost': 0 }
+        };
+        
+        if (advantages[attackType] && advantages[attackType][defenseType]) {
+            return advantages[attackType][defenseType];
+        }
+        return 1;
+    }
+    
+    // Fonction pour afficher la carte des stats
+    function showStatsCard(pokemon, displayName, power, cardElement) {
+        // Annuler tout timeout de show en cours
+        if (showTimeout) {
+            clearTimeout(showTimeout);
+            showTimeout = null;
+        }
+        
+        statsCardTitle.textContent = displayName;
+        statsCardPower.textContent = `⚡ ${power}`;
+        
+        // Calculer le taux de victoire
+        const winRate = calculateWinRate(pokemon);
+        winRateValue.textContent = `${winRate}%`;
+        winRateFill.style.width = `${winRate}%`;
+        
+        // Créer ou mettre à jour le graphique radar
+        const ctx = document.getElementById('statsRadarChart').getContext('2d');
+        
+        if (radarChart) {
+            radarChart.destroy();
+        }
+        
+        radarChart = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: ['PV', 'Attaque', 'Défense', 'Att. Spé.', 'Déf. Spé.', 'Vitesse'],
+                datasets: [{
+                    label: displayName,
+                    data: [
+                        pokemon.HP,
+                        pokemon.Attack,
+                        pokemon.Defense,
+                        pokemon['Sp. Atk'],
+                        pokemon['Sp. Def'],
+                        pokemon.Speed
+                    ],
+                    backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                    borderColor: 'rgba(102, 126, 234, 1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: 'rgba(102, 126, 234, 1)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(102, 126, 234, 1)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        max: 150,
+                        ticks: {
+                            stepSize: 30,
+                            font: {
+                                size: 10
+                            }
+                        },
+                        pointLabels: {
+                            font: {
+                                size: 11,
+                                weight: 'bold'
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+        
+        // Afficher immédiatement la carte et la positionner
+        statsCard.style.display = 'block';
+        if (cardElement) {
+            positionStatsCardNextToCard(cardElement);
+        }
+        statsCard.style.opacity = '0';
+        
+        // Utiliser requestAnimationFrame pour une animation fluide
+        requestAnimationFrame(() => {
+            statsCard.style.opacity = '1';
+        });
+    }
+    
+    // Fonction pour positionner la carte à côté de la carte Pokémon
+    function positionStatsCardNextToCard(cardElement) {
+        const cardRect = cardElement.getBoundingClientRect();
+        const statsCardWidth = statsCard.offsetWidth;
+        const statsCardHeight = statsCard.offsetHeight;
+        const offset = 20;
+        
+        let x, y;
+        
+        // Essayer de positionner à droite de la carte
+        x = cardRect.right + offset;
+        y = cardRect.top;
+        
+        // Si ça dépasse à droite, positionner à gauche
+        if (x + statsCardWidth > window.innerWidth - offset) {
+            x = cardRect.left - statsCardWidth - offset;
+        }
+        
+        // Si ça dépasse à gauche, forcer à droite dans la fenêtre
+        if (x < offset) {
+            x = window.innerWidth - statsCardWidth - offset;
+        }
+        
+        // Ajuster verticalement si nécessaire
+        if (y + statsCardHeight > window.innerHeight - offset) {
+            y = Math.max(offset, window.innerHeight - statsCardHeight - offset);
+        }
+        
+        // S'assurer que la carte ne dépasse pas en haut
+        if (y < offset) {
+            y = offset;
+        }
+        
+        statsCard.style.left = `${x}px`;
+        statsCard.style.top = `${y}px`;
+    }
+    
+    // Fonction pour cacher la carte des stats
+    function hideStatsCard() {
+        // Annuler tout timeout de masquage précédent
+        if (hideTimeout) {
+            clearTimeout(hideTimeout);
+        }
+        
+        // Annuler tout timeout de show en cours
+        if (showTimeout) {
+            clearTimeout(showTimeout);
+            showTimeout = null;
+        }
+        
+        statsCard.style.opacity = '0';
+        hideTimeout = setTimeout(() => {
+            statsCard.style.display = 'none';
+            hideTimeout = null;
+        }, 200);
     }
 });
