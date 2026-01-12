@@ -50,7 +50,7 @@ window.addEventListener('DOMContentLoaded', function() {
                     dexNumber: dexNum
                 };
             });
-            // Trier par type principal dès le chargement
+            // Trier par type principal dès le chargement (correspond à l'option par défaut)
             const sortedData = [...pokemonData].sort((a, b) => a['Type 1'].localeCompare(b['Type 1']));
             displayPokemons(sortedData);
             
@@ -106,9 +106,19 @@ window.addEventListener('DOMContentLoaded', function() {
                 // Trier selon l'option sélectionnée
                 filteredData = [...filteredData].sort((a, b) => {
                     switch(sortOption) {
+                        case 'pokedex': {
+                            // Tri par numéro de Pokédex
+                            let baseNameA = a.Name.includes('Mega') ? a.Name.split('Mega')[0] : a.Name;
+                            let baseNameB = b.Name.includes('Mega') ? b.Name.split('Mega')[0] : b.Name;
+                            const pokeDataA = pokemonByName[baseNameA];
+                            const pokeDataB = pokemonByName[baseNameB];
+                            let dexNumA = pokeDataA ? parseInt(pokeDataA.dexNumber) : 999;
+                            let dexNumB = pokeDataB ? parseInt(pokeDataB.dexNumber) : 999;
+                            return dexNumA - dexNumB;
+                        }
                         case 'type':
                             return a['Type 1'].localeCompare(b['Type 1']);
-                        case 'name':
+                        case 'name': {
                             let baseNameA = a.Name.includes('Mega') ? a.Name.split('Mega')[0] : a.Name;
                             let baseNameB = b.Name.includes('Mega') ? b.Name.split('Mega')[0] : b.Name;
                             const dataA = pokemonByName[baseNameA];
@@ -118,6 +128,7 @@ window.addEventListener('DOMContentLoaded', function() {
                             if (a.Name.includes('Mega')) nameA = 'Méga-' + nameA;
                             if (b.Name.includes('Mega')) nameB = 'Méga-' + nameB;
                             return nameA.localeCompare(nameB);
+                        }
                         case 'hp':
                             return b.HP - a.HP;
                         case 'attack':
@@ -355,7 +366,6 @@ window.addEventListener('DOMContentLoaded', function() {
                 });
             }
         });
-        
         // Ajouter les gestionnaires d'événements pour les boutons d'achat
         const buyButtons = document.querySelectorAll('.buy-button');
         buyButtons.forEach(button => {
@@ -460,5 +470,27 @@ window.addEventListener('DOMContentLoaded', function() {
                 notification.remove();
             }, 300);
         }, 3000);
+    }
+    
+    // Gestion du bouton retour en haut
+    const scrollToTopBtn = document.getElementById('scrollToTopBtn');
+    
+    if (scrollToTopBtn) {
+        // Afficher/masquer le bouton selon la position de scroll
+        window.addEventListener('scroll', () => {
+            if (window.pageYOffset > 300) {
+                scrollToTopBtn.classList.add('visible');
+            } else {
+                scrollToTopBtn.classList.remove('visible');
+            }
+        });
+        
+        // Action au clic : retour en haut avec smooth scroll
+        scrollToTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
     }
 });
