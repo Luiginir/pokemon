@@ -50,8 +50,16 @@ window.addEventListener('DOMContentLoaded', function() {
                     dexNumber: dexNum
                 };
             });
-            // Trier par type principal dès le chargement (correspond à l'option par défaut)
-            const sortedData = [...pokemonData].sort((a, b) => a['Type 1'].localeCompare(b['Type 1']));
+            // Trier par numéro de Pokédex dès le chargement (correspond à l'option par défaut)
+            const sortedData = [...pokemonData].sort((a, b) => {
+                let baseNameA = a.Name.includes('Mega') ? a.Name.split('Mega')[0] : a.Name;
+                let baseNameB = b.Name.includes('Mega') ? b.Name.split('Mega')[0] : b.Name;
+                const pokeDataA = pokemonByName[baseNameA];
+                const pokeDataB = pokemonByName[baseNameB];
+                let dexNumA = pokeDataA ? parseInt(pokeDataA.dexNumber) : 999;
+                let dexNumB = pokeDataB ? parseInt(pokeDataB.dexNumber) : 999;
+                return dexNumA - dexNumB;
+            });
             displayPokemons(sortedData);
             
             // Ajouter l'événement de filtrage
@@ -80,7 +88,9 @@ window.addEventListener('DOMContentLoaded', function() {
                 
                 // Filtrer par type
                 if (selectedType !== 'all') {
-                    filteredData = filteredData.filter(pokemon => pokemon['Type 1'] === selectedType);
+                    filteredData = filteredData.filter(pokemon => 
+                        pokemon['Type 1'] === selectedType || pokemon['Type 2'] === selectedType
+                    );
                 }
                 
                 // Filtrer par nom
@@ -369,12 +379,12 @@ window.addEventListener('DOMContentLoaded', function() {
         // Ajouter les gestionnaires d'événements pour les boutons d'achat
         const buyButtons = document.querySelectorAll('.buy-button');
         buyButtons.forEach(button => {
-            button.addEventListener('click', function(e) {
+            button.addEventListener('click', async function(e) {
                 e.stopPropagation(); // Empêcher le retournement de la carte
                 const pokemonName = this.getAttribute('data-pokemon-name');
                 const price = parseInt(this.getAttribute('data-price'));
                 
-                const result = ShopSystem.buyPokemon(pokemonName, price);
+                const result = await ShopSystem.buyPokemon(pokemonName, price);
                 
                 if (result.success) {
                     // Afficher un message de succès
@@ -388,7 +398,9 @@ window.addEventListener('DOMContentLoaded', function() {
                         let filteredData = allPokemonData;
                         
                         if (selectedType !== 'all') {
-                            filteredData = filteredData.filter(pokemon => pokemon['Type 1'] === selectedType);
+                            filteredData = filteredData.filter(pokemon => 
+                                pokemon['Type 1'] === selectedType || pokemon['Type 2'] === selectedType
+                            );
                         }
                         
                         if (searchQuery) {
@@ -447,6 +459,7 @@ window.addEventListener('DOMContentLoaded', function() {
     
     // Fonction pour afficher des notifications
     function showNotification(message, type) {
+        console.log('Notification:', message, 'Type:', type); // Debug
         // Supprimer les notifications existantes
         const existing = document.querySelector('.notification');
         if (existing) {
@@ -456,6 +469,8 @@ window.addEventListener('DOMContentLoaded', function() {
         const notification = document.createElement('div');
         notification.className = `notification ${type}`;
         notification.textContent = message;
+        notification.style.color = 'white'; // Force la couleur blanche
+        notification.style.fontSize = '1.2rem'; // Force la taille
         document.body.appendChild(notification);
         
         // Animation d'apparition
