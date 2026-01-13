@@ -1,43 +1,42 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="./assets/css/styles.css">
     <link rel="stylesheet" href="./assets/css/bibliotheque.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <title>Data Pokemon</title>
 </head>
+
 <body>
     <header>
         <nav>
-            <ul>
-                <li><a href="index.html">Accueil</a></li>
-                <li><a href="bibliotheque.html">Boutique</a></li>
-                <li><a href="deck-builder.html">Mes Decks</a></li>
-                <li><a href="table.php">Simulation</a></li>
-                <li><a href="game.html">Jouer</a></li>
-                <li class="credits-nav"><span class="credits-display">0</span><img src="./assets/images/icons/poke-dollar.png" class="icon-small pokedollar" alt="Pokeball"></li>
-                <li class="user-nav">👤 <span class="username-display"></span></li>
-                <li><button onclick="ShopSystem.logout()" class="logout-btn">Déconnexion</button></li>
-            </ul>
+            <div class="nav-links">
+                <a href="index.html">Accueil</a>
+                <a href="bibliotheque.html">Boutique</a>
+                <a href="deck-builder.html">Mes Decks</a>
+                <a href="table.php">Simulation</a>
+                <a href="game.html">Jouer</a>
+            </div>
+            <div class="nav-user">
+                <span class="credits-nav"><span class="credits-display">0</span><img
+                        src="./assets/images/icons/poke-dollar.png" class="icon-small pokedollar" alt="Pokedollar"></span>
+                <span class="user-nav">👤 <span class="username-display"></span></span>
+                <button onclick="ShopSystem.logout()" class="logout-btn">Déconnexion</button>
+            </div>
         </nav>
     </header>
-    <h1>Boutique Pokémon</h1>
+    <h1><img src="./assets/images/icons/boite-jetons.png" class="icon-medium" alt="Boite jetons">Boutique Pokémon</h1>
     <h3>Gagnez des combats pour obtenir des crédits et débloquer de nouveaux Pokémon !</h3>
-    
-    <div class="credits-container">
-        <div class="credits-box">
-            <span class="credits-label">💰 Crédits:</span>
-            <span class="credits-display">0</span>
-        </div>
-    </div>
-    
+
     <div class="filter-container">
         <div class="search-section">
             <label for="searchInput">Rechercher :</label>
             <input type="text" id="searchInput" placeholder="Nom du Pokémon...">
         </div>
-        
+
         <div class="filter-section">
             <label for="typeFilter">Filtrer par type :</label>
             <select id="typeFilter">
@@ -62,7 +61,7 @@
                 <option value="Fighting">Combat</option>
             </select>
         </div>
-        
+
         <div class="sort-section">
             <label for="sortBy">Trier par :</label>
             <select id="sortBy">
@@ -75,13 +74,13 @@
             </select>
         </div>
     </div>
-    
+
     <div class="bibliotheque">
         <div class="grid">
 
         </div>
     </div>
-    
+
     <!-- Carte flottante pour les stats -->
     <div id="statsCard" class="stats-card-popup" style="display: none;">
         <div class="stats-card-header">
@@ -99,14 +98,15 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Bouton retour en haut -->
-    <button id="scrollToTopBtn" class="scroll-to-top" title="Retour en haut">
-        ⬆️
+    <button id="scrollToTopBtn" class="scroll-to-top visible" title="Retour en haut">
+        <i class="fa-solid fa-arrow-up"></i>
     </button>
 </body>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="./assets/js/config.js"></script>
 <script src="./assets/js/shop-system.js"></script>
 <script src="./assets/js/bibliotheque.js"></script>
+
 </html>

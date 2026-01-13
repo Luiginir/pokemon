@@ -19,14 +19,22 @@ error_reporting(E_ALL);
 <body>
     <header>
         <nav>
-            <ul>
-                <li><a href="index.html">Accueil</a></li>
-                <li><a href="bibliotheque.html">Pokédex</a></li>
-                <li><a href="table.php">Simulation</a></li>
-                <li><a href="game.html">Jouer</a></li>
-            </ul>
+            <div class="nav-links">
+                <a href="index.html">Accueil</a>
+                <a href="bibliotheque.html">Boutique</a>
+                <a href="deck-builder.html">Mes Decks</a>
+                <a href="table.php">Simulation</a>
+                <a href="game.html">Jouer</a>
+            </div>
+            <div class="nav-user">
+                <span class="credits-nav"><span class="credits-display">0</span><img
+                        src="./assets/images/icons/poke-dollar.png" class="icon-small pokedollar" alt="Pokedollar"></span>
+                <span class="user-nav">👤 <span class="username-display"></span></span>
+                <button onclick="ShopSystem.logout()" class="logout-btn">Déconnexion</button>
+            </div>
         </nav>
     </header>
+    
     <h1>Simulation de combat</h1>
     <h3>Simulez votre combat Pokémon et voyez quelle est la meilleure combinaison</h3>
     <div class="select">
