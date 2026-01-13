@@ -759,7 +759,7 @@ h3 {
 /* Carte flottante des stats */
 .stats-card-popup {
     position: fixed;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background-color: rgba(0, 0, 0, 0.5);
     border-radius: 15px;
     padding: 20px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
@@ -767,9 +767,10 @@ h3 {
     pointer-events: none;
     min-width: 350px;
     max-width: 400px;
-    border: 3px solid rgba(255, 255, 255, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.3);
     backdrop-filter: blur(10px);
     transition: opacity 0.2s ease;
+    color: white;
 }
 
 .stats-card-header {
@@ -796,7 +797,6 @@ h3 {
 }
 
 .stats-card-content {
-    background: rgba(255, 255, 255, 0.95);
     border-radius: 10px;
     padding: 15px;
 }
@@ -804,6 +804,7 @@ h3 {
 .stats-card-content canvas {
     max-height: 200px;
     margin-bottom: 15px;
+    color: white;
 }
 
 .win-rate-section {
@@ -814,7 +815,7 @@ h3 {
 
 .win-rate-label {
     font-size: 0.9rem;
-    color: #666;
+    color: #fff;
     margin-bottom: 5px;
     font-weight: 600;
 }
@@ -838,7 +839,7 @@ h3 {
 
 .win-rate-fill {
     height: 100%;
-    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    background-color: #667eea;
     border-radius: 10px;
     transition: width 0.5s ease;
     position: relative;
@@ -851,19 +852,10 @@ h3 {
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
     animation: shimmer 2s infinite;
 }
-
-@keyframes shimmer {
-    0% {
-        transform: translateX(-100%);
-    }
-    100% {
-        transform: translateX(100%);
-    }
-}
-
+s
 /* Bouton retour en haut */
 .scroll-to-top {
     position: fixed;

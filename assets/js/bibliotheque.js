@@ -739,13 +739,22 @@ window.addEventListener('DOMContentLoaded', function() {
                     r: {
                         beginAtZero: true,
                         max: 150,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.3)'
+                        },
+                        angleLines: {
+                            color: 'rgba(255, 255, 255, 0.3)'
+                        },
                         ticks: {
                             stepSize: 30,
                             font: {
                                 size: 10
-                            }
+                            },
+                            color: '#fff',
+                            backdropColor: 'transparent'
                         },
                         pointLabels: {
+                            color: '#fff',
                             font: {
                                 size: 11,
                                 weight: 'bold'
@@ -755,7 +764,10 @@ window.addEventListener('DOMContentLoaded', function() {
                 },
                 plugins: {
                     legend: {
-                        display: false
+                        display: false,
+                        labels: {
+                            color: '#fff'
+                        }
                     }
                 }
             }
