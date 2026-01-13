@@ -30,7 +30,7 @@ document.getElementById('formLogin').addEventListener('submit', async (e) => {
     submitBtn.textContent = 'Connexion...';
     
     try {
-        const response = await fetch('/api/login', {
+        const response = await fetch(AppConfig.apiUrl('/api/login'), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -43,7 +43,7 @@ document.getElementById('formLogin').addEventListener('submit', async (e) => {
         if (response.ok) {
             showMessage('Connexion réussie ! Redirection...', 'success');
             setTimeout(() => {
-                window.location.href = '/index.html';
+                window.location.href = AppConfig.pageUrl('index.html');
             }, 1000);
         } else {
             showMessage(data.error || 'Erreur de connexion', 'error');
@@ -90,7 +90,7 @@ document.getElementById('formRegister').addEventListener('submit', async (e) => 
     console.log('📤 Envoi de la requête d\'inscription pour:', username);
     
     try {
-        const response = await fetch('/api/register', {
+        const response = await fetch(AppConfig.apiUrl('/api/register'), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -106,7 +106,7 @@ document.getElementById('formRegister').addEventListener('submit', async (e) => 
         if (response.ok) {
             showMessage('Compte créé avec succès ! Redirection...', 'success');
             setTimeout(() => {
-                window.location.href = '/index.html';
+                window.location.href = AppConfig.pageUrl('index.html');
             }, 1000);
         } else {
             showMessage(data.error || 'Erreur lors de la création du compte', 'error');
@@ -138,11 +138,11 @@ function hideMessage() {
 // Vérifier si déjà connecté
 async function checkSession() {
     try {
-        const response = await fetch('/api/session');
+        const response = await fetch(AppConfig.apiUrl('/api/session'));
         const data = await response.json();
         
         if (data.authenticated) {
-            window.location.href = '/index.html';
+            window.location.href = AppConfig.pageUrl('index.html');
         }
     } catch (error) {
         console.error('Erreur de vérification de session:', error);

@@ -54,6 +54,9 @@ document.addEventListener('DOMContentLoaded', async function() {
             };
         });
         
+        // Attendre que ShopSystem soit initialisé (charge les decks depuis le serveur)
+        await ShopSystem.init();
+        
         // Initialiser l'interface
         displayDecksList();
         setupEventListeners();
@@ -257,7 +260,7 @@ function updateCounter() {
 }
 
 // Sauvegarder le deck
-function saveDeck() {
+async function saveDeck() {
     const name = document.getElementById('deckName').value.trim();
     
     if (!name) {
@@ -272,9 +275,9 @@ function saveDeck() {
     
     let result;
     if (editMode) {
-        result = ShopSystem.updateDeck(currentDeck.id, name, currentDeck.pokemons);
+        result = await ShopSystem.updateDeck(currentDeck.id, name, currentDeck.pokemons);
     } else {
-        result = ShopSystem.createDeck(name, currentDeck.pokemons);
+        result = await ShopSystem.createDeck(name, currentDeck.pokemons);
     }
     
     if (result.success) {
@@ -292,12 +295,12 @@ function editDeck(deckId) {
 }
 
 // Supprimer un deck
-function deleteDeck(deckId) {
+async function deleteDeck(deckId) {
     if (!confirm('Êtes-vous sûr de vouloir supprimer ce deck ?')) {
         return;
     }
     
-    const result = ShopSystem.deleteDeck(deckId);
+    const result = await ShopSystem.deleteDeck(deckId);
     if (result.success) {
         displayDecksList();
     } else {

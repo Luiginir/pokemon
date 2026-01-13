@@ -3,6 +3,7 @@ const session = require('express-session');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcryptjs');
 const path = require('path');
+const fs = require('fs');
 const mysql = require('mysql2/promise');
 const config = require('./config');
 
@@ -15,23 +16,40 @@ const pool = mysql.createPool(config.db);
 // Fonction pour initialiser la base de données
 async function initDatabase() {
     try {
+        console.log('🔄 Tentative de connexion à MySQL...');
+        console.log('📊 Configuration:', {
+            host: config.db.host,
+            user: config.db.user,
+            database: config.db.database,
+            port: config.db.port
+        });
+        
         const connection = await pool.getConnection();
-        console.log('✅ Connexion MySQL établie');
+        console.log('✅ Connexion MySQL établie avec succès');
+        
+        // Tester une requête simple
+        await connection.query('SELECT 1');
+        console.log('✅ Test de requête réussi');
+        
         connection.release();
+        return true;
     } catch (error) {
         console.error('❌ Erreur de connexion MySQL:', error.message);
-        console.log('💡 Assurez-vous que MySQL est démarré et que la base de données existe.');
-        console.log('💡 Exécutez le fichier database.sql pour créer les tables.');
-        process.exit(1);
+        console.error('📝 Détails:', error);
+        console.log('💡 Vérifications à faire:');
+        console.log('  1. MySQL est-il installé et démarré ?');
+        console.log('  2. La base de données existe-t-elle ?');
+        console.log('  3. Les identifiants sont-ils corrects ?');
+        console.log('  4. Les variables d\'environnement sont-elles définies ?');
+        
+        // Ne pas quitter, laisser le serveur démarrer pour voir les logs
+        return false;
     }
 }
 
-// Middleware
+// Middleware globaux
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static(__dirname));
-
-// Configuration des sessions
 app.use(session(config.session));
 
 // Middleware pour vérifier l'authentification
@@ -42,8 +60,14 @@ function requireAuth(req, res, next) {
     next();
 }
 
+// Créer un router pour le préfixe /pokemon
+const router = express.Router();
+
+// Fichiers statiques sur /pokemon (servir depuis la racine du projet)
+router.use(express.static(path.join(__dirname)));
+
 // Route principale - rediriger vers login si non authentifié
-app.get('/', (req, res) => {
+router.get('/', (req, res) => {
     if (!req.session.userId) {
         return res.sendFile(path.join(__dirname, 'login.html'));
     }
@@ -51,7 +75,7 @@ app.get('/', (req, res) => {
 });
 
 // API - Inscription
-app.post('/api/register', async (req, res) => {
+router.post('/api/register', async (req, res) => {
     console.log('📝 Tentative d\'inscription:', req.body);
     const { username, password } = req.body;
     
@@ -85,6 +109,29 @@ app.post('/api/register', async (req, res) => {
         
         const userId = result.insertId;
         
+        // Débloquer les 10 Pokémons de départ (les plus faibles)
+        const pokemonData = JSON.parse(fs.readFileSync(path.join(__dirname, 'assets', 'data', 'pokemons.json'), 'utf8'));
+        
+        // Calculer la puissance et trier
+        const pokemonsWithPower = pokemonData.map(p => ({
+            ...p,
+            power: p.HP + p.Attack + p.Defense + (p['Sp. Atk'] || 0) + (p['Sp. Def'] || 0) + (p.Speed || 0)
+        }));
+        pokemonsWithPower.sort((a, b) => a.power - b.power);
+        
+        // Prendre les 10 premiers
+        const starterPokemons = pokemonsWithPower.slice(0, 10).map(p => p.Name);
+        
+        // Insérer les Pokémons de départ
+        if (starterPokemons.length > 0) {
+            const values = starterPokemons.map(name => [userId, name]);
+            await pool.query(
+                'INSERT INTO unlocked_pokemons (user_id, pokemon_name) VALUES ?',
+                [values]
+            );
+            console.log('🎁 Pokémons de départ débloqués pour:', username, starterPokemons);
+        }
+        
         // Connecter automatiquement après l'inscription
         req.session.userId = userId;
         req.session.username = username;
@@ -103,7 +150,7 @@ app.post('/api/register', async (req, res) => {
 });
 
 // API - Connexion
-app.post('/api/login', async (req, res) => {
+router.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
     
     if (!username || !password) {
@@ -146,7 +193,7 @@ app.post('/api/login', async (req, res) => {
 });
 
 // API - Déconnexion
-app.post('/api/logout', (req, res) => {
+router.post('/api/logout', (req, res) => {
     req.session.destroy((err) => {
         if (err) {
             return res.status(500).json({ error: 'Erreur lors de la déconnexion' });
@@ -156,7 +203,7 @@ app.post('/api/logout', (req, res) => {
 });
 
 // API - Vérifier la session
-app.get('/api/session', (req, res) => {
+router.get('/api/session', (req, res) => {
     if (!req.session.userId) {
         return res.json({ authenticated: false });
     }
@@ -168,7 +215,7 @@ app.get('/api/session', (req, res) => {
 });
 
 // API - Obtenir les données utilisateur
-app.get('/api/userdata', requireAuth, async (req, res) => {
+router.get('/api/userdata', requireAuth, async (req, res) => {
     try {
         const userId = req.session.userId;
         
@@ -215,7 +262,7 @@ app.get('/api/userdata', requireAuth, async (req, res) => {
 });
 
 // API - Mettre à jour les crédits
-app.post('/api/credits', requireAuth, async (req, res) => {
+router.post('/api/credits', requireAuth, async (req, res) => {
     const { amount } = req.body;
     
     if (typeof amount !== 'number') {
@@ -236,7 +283,7 @@ app.post('/api/credits', requireAuth, async (req, res) => {
 });
 
 // API - Débloquer un Pokémon
-app.post('/api/unlock-pokemon', requireAuth, async (req, res) => {
+router.post('/api/unlock-pokemon', requireAuth, async (req, res) => {
     const { pokemonName, price } = req.body;
     
     if (!pokemonName || typeof price !== 'number') {
@@ -315,7 +362,7 @@ app.post('/api/unlock-pokemon', requireAuth, async (req, res) => {
 });
 
 // API - Sauvegarder les Pokémons débloqués
-app.post('/api/unlocked-pokemons', requireAuth, async (req, res) => {
+router.post('/api/unlocked-pokemons', requireAuth, async (req, res) => {
     const { pokemons } = req.body;
     
     if (!Array.isArray(pokemons)) {
@@ -359,7 +406,7 @@ app.post('/api/unlocked-pokemons', requireAuth, async (req, res) => {
 });
 
 // API - Créer un deck
-app.post('/api/decks', requireAuth, async (req, res) => {
+router.post('/api/decks', requireAuth, async (req, res) => {
     const { name, pokemons } = req.body;
     
     if (!name || !Array.isArray(pokemons) || pokemons.length !== 9) {
@@ -414,7 +461,7 @@ app.post('/api/decks', requireAuth, async (req, res) => {
 });
 
 // API - Mettre à jour un deck
-app.put('/api/decks/:id', requireAuth, async (req, res) => {
+router.put('/api/decks/:id', requireAuth, async (req, res) => {
     const deckId = parseInt(req.params.id);
     const { name, pokemons } = req.body;
     
@@ -494,7 +541,7 @@ app.put('/api/decks/:id', requireAuth, async (req, res) => {
 });
 
 // API - Supprimer un deck
-app.delete('/api/decks/:id', requireAuth, async (req, res) => {
+router.delete('/api/decks/:id', requireAuth, async (req, res) => {
     const deckId = parseInt(req.params.id);
     
     try {
@@ -524,7 +571,7 @@ app.delete('/api/decks/:id', requireAuth, async (req, res) => {
 });
 
 // API - Obtenir les decks
-app.get('/api/decks', requireAuth, async (req, res) => {
+router.get('/api/decks', requireAuth, async (req, res) => {
     try {
         const userId = req.session.userId;
         
@@ -549,16 +596,39 @@ app.get('/api/decks', requireAuth, async (req, res) => {
     }
 });
 
+// Monter le router sur /pokemon
+// Monter le router sur /pokemon (pour AlwaysData)
+app.use('/pokemon', router);
+
+// Monter aussi sur la racine / (pour le développement local)
+app.use('/', router);
+
 // Démarrer le serveur
 async function startServer() {
-    await initDatabase();
-    app.listen(PORT, () => {
-        console.log(`🚀 Serveur démarré sur http://localhost:${PORT}`);
-        console.log(`📊 Base de données MySQL connectée`);
+    console.log('🚀 Démarrage du serveur Pokemon Battle...');
+    console.log('🌍 Environnement:', process.env.NODE_ENV || 'development');
+    console.log('🔌 Port:', PORT);
+    
+    const dbConnected = await initDatabase();
+    
+    if (!dbConnected) {
+        console.warn('⚠️  Le serveur démarre SANS connexion à la base de données');
+        console.warn('⚠️  Les fonctionnalités seront limitées');
+    }
+    
+    app.listen(PORT, '0.0.0.0', () => {
+        console.log(`✅ Serveur démarré sur le port ${PORT}`);
+        console.log(`📊 Base de données: ${dbConnected ? 'Connectée ✅' : 'Non connectée ❌'}`);
+        console.log(`🔗 Accès: http://localhost:${PORT}`);
+        
+        if (process.env.NODE_ENV === 'production') {
+            console.log('🔒 Mode production activé');
+        }
     });
 }
 
 startServer().catch(err => {
-    console.error('❌ Erreur fatale:', err);
+    console.error('❌ Erreur fatale lors du démarrage:', err);
+    console.error(err.stack);
     process.exit(1);
 });

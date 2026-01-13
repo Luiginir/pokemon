@@ -11,14 +11,14 @@ const ShopSystem = {
     currentUser: null,
     
     // Initialiser le système
-    async init() {
+    async init(allPokemons = null) {
         try {
             // Vérifier la session
-            const sessionResponse = await fetch('/api/session');
+            const sessionResponse = await fetch(AppConfig.apiUrl('/api/session'));
             const sessionData = await sessionResponse.json();
             
             if (!sessionData.authenticated) {
-                window.location.href = '/login.html';
+                window.location.href = AppConfig.pageUrl('login.html');
                 return;
             }
             
@@ -26,6 +26,11 @@ const ShopSystem = {
             
             // Charger les données utilisateur
             await this.loadUserData();
+            
+            // Initialiser les Pokémons de départ si nécessaire
+            if (allPokemons) {
+                await this.initializeStarterPokemon(allPokemons);
+            }
             
             // Mettre à jour l'affichage
             this.updateCreditsDisplay();
@@ -38,12 +43,12 @@ const ShopSystem = {
     // Charger les données utilisateur depuis l'API
     async loadUserData() {
         try {
-            const response = await fetch('/api/userdata');
+            const response = await fetch(AppConfig.apiUrl('/api/userdata'));
             if (response.ok) {
                 this.cachedData = await response.json();
                 return this.cachedData;
             } else if (response.status === 401) {
-                window.location.href = '/login.html';
+                window.location.href = AppConfig.pageUrl('login.html');
             }
         } catch (error) {
             console.error('Erreur de chargement des données:', error);
@@ -63,7 +68,7 @@ const ShopSystem = {
     async addCredits(amount) {
         const newCredits = this.getCredits() + amount;
         try {
-            const response = await fetch('/api/credits', {
+            const response = await fetch(AppConfig.apiUrl('/api/credits'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -122,7 +127,7 @@ const ShopSystem = {
         }
         
         try {
-            const response = await fetch('/api/unlock-pokemon', {
+            const response = await fetch(AppConfig.apiUrl('/api/unlock-pokemon'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -182,7 +187,7 @@ const ShopSystem = {
         
         // Les débloquer via l'API
         try {
-            const response = await fetch('/api/unlocked-pokemons', {
+            const response = await fetch(AppConfig.apiUrl('/api/unlocked-pokemons'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -209,8 +214,8 @@ const ShopSystem = {
     // Déconnexion
     async logout() {
         try {
-            await fetch('/api/logout', { method: 'POST' });
-            window.location.href = '/login.html';
+            await fetch(AppConfig.apiUrl('/api/logout'), { method: 'POST' });
+            window.location.href = AppConfig.pageUrl('login.html');
         } catch (error) {
             console.error('Erreur de déconnexion:', error);
         }
@@ -238,7 +243,7 @@ const ShopSystem = {
         }
         
         try {
-            const response = await fetch('/api/decks', {
+            const response = await fetch(AppConfig.apiUrl('/api/decks'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -284,7 +289,7 @@ const ShopSystem = {
         }
         
         try {
-            const response = await fetch(`/api/decks/${deckId}`, {
+            const response = await fetch(AppConfig.apiUrl(`/api/decks/${deckId}`), {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
@@ -313,7 +318,7 @@ const ShopSystem = {
     // Supprimer un deck
     async deleteDeck(deckId) {
         try {
-            const response = await fetch(`/api/decks/${deckId}`, {
+            const response = await fetch(AppConfig.apiUrl(`/api/decks/${deckId}`), {
                 method: 'DELETE'
             });
             
