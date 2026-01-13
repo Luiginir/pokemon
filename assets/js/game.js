@@ -982,6 +982,25 @@ function initMultiplayer() {
     const joinBtn = document.getElementById('joinBtn');
     const copyLinkBtn = document.getElementById('copyLinkBtn');
     const connectBtn = document.getElementById('connectBtn');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    
+    // Fermer la modale avec le bouton ×
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', () => {
+            modal.classList.add('hidden');
+            // Retourner à l'accueil si l'utilisateur ferme sans choisir de mode
+            window.location.href = 'index.html';
+        });
+    }
+    
+    // Fermer la modale avec la touche Échap
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+            modal.classList.add('hidden');
+            // Retourner à l'accueil si l'utilisateur ferme sans choisir de mode
+            window.location.href = 'index.html';
+        }
+    });
     
     // Vérifier si on a un code dans l'URL
     const urlParams = new URLSearchParams(window.location.search);
