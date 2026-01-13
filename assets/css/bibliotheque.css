@@ -758,7 +758,7 @@ h3 {
 
 /* Carte flottante des stats */
 .stats-card-popup {
-    position: fixed;
+    position: absolute;
     background-color: rgba(0, 0, 0, 0.5);
     border-radius: 15px;
     padding: 20px;
@@ -790,10 +790,7 @@ h3 {
 }
 
 .stats-card-header span {
-    color: #ffd700;
-    font-weight: bold;
-    font-size: 1.1rem;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    display: none;
 }
 
 .stats-card-content {

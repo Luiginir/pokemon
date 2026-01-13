@@ -793,30 +793,35 @@ window.addEventListener('DOMContentLoaded', function() {
         const statsCardHeight = statsCard.offsetHeight;
         const offset = 20;
         
+        // Ajouter le scroll offset pour position absolute
+        const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
+        const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+        
         let x, y;
         
-        // Essayer de positionner à droite de la carte
-        x = cardRect.right + offset;
-        y = cardRect.top;
+        // Déterminer si la carte est dans la moitié gauche ou droite de l'écran
+        const cardCenterX = cardRect.left + cardRect.width / 2;
+        const screenCenterX = window.innerWidth / 2;
         
-        // Si ça dépasse à droite, positionner à gauche
-        if (x + statsCardWidth > window.innerWidth - offset) {
-            x = cardRect.left - statsCardWidth - offset;
+        if (cardCenterX < screenCenterX) {
+            // Carte dans la moitié gauche -> afficher à droite
+            x = cardRect.right + offset + scrollX;
+        } else {
+            // Carte dans la moitié droite -> afficher à gauche
+            x = cardRect.left - statsCardWidth - offset + scrollX;
         }
         
-        // Si ça dépasse à gauche, forcer à droite dans la fenêtre
-        if (x < offset) {
-            x = window.innerWidth - statsCardWidth - offset;
+        // Position verticale alignée avec le haut de la carte
+        y = cardRect.top + scrollY;
+        
+        // Ajuster verticalement si nécessaire pour ne pas dépasser en bas
+        if (cardRect.top + statsCardHeight > window.innerHeight - offset) {
+            y = Math.max(cardRect.top + scrollY, window.innerHeight - statsCardHeight - offset + scrollY);
         }
         
-        // Ajuster verticalement si nécessaire
-        if (y + statsCardHeight > window.innerHeight - offset) {
-            y = Math.max(offset, window.innerHeight - statsCardHeight - offset);
-        }
-        
-        // S'assurer que la carte ne dépasse pas en haut
-        if (y < offset) {
-            y = offset;
+        // S'assurer que la carte ne dépasse pas en haut du viewport
+        if (cardRect.top < offset) {
+            y = offset + scrollY;
         }
         
         statsCard.style.left = `${x}px`;

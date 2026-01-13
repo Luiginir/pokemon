@@ -60,8 +60,14 @@ nav ul a:hover {
     transition: 0.2s;
 }
 
+.icon-small {
+    height: 16px;
+    vertical-align: middle;
+    margin-bottom: 4px;
+
+}
+
 .icon-medium {
-    width: 48px;
     height: 48px;
     vertical-align: middle;
     margin-right: 0px;
@@ -69,11 +75,14 @@ nav ul a:hover {
 }
 
 .icon-big {
-    width: 64px;
     height: 64px;
     vertical-align: middle;
     margin-right: 0px;
     margin-bottom: 0px;
+}
+
+.pokedollar {
+    margin-left: 4px;
 }
 
 /* Affichage des crédits dans la navbar */
