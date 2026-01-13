@@ -40,6 +40,19 @@ window.addEventListener('DOMContentLoaded', function() {
         'Latios': '10063',
         'Rayquaza': '10079'
     };
+    
+    // Mapping manuel des formes Primo vers leurs IDs PokeAPI
+    const primalMapping = {
+        'Kyogre': '10077',
+        'Groudon': '10078'
+    };
+    
+    // Mapping manuel des formes de Deoxys vers leurs IDs PokeAPI
+    const deoxysMapping = {
+        'DeoxysNormal Forme': '386',
+        'DeoxysAttack Forme': '10001',
+        'DeoxysDefense Forme': '10002'
+    };
 
     // Charger les noms français
     Promise.all([
@@ -61,8 +74,31 @@ window.addEventListener('DOMContentLoaded', function() {
                     dexNumber: dexNum
                 };
             });
-            // Trier par type principal dès le chargement
-            const sortedData = [...pokemonData].sort((a, b) => a['Type 1'].localeCompare(b['Type 1']));
+            // Trier par numéro de Pokédex dès le chargement (correspond à l'option par défaut)
+            const sortedData = [...pokemonData].sort((a, b) => {
+                let baseNameA = getBaseName(a.Name);
+                let baseNameB = getBaseName(b.Name);
+                const pokeDataA = pokemonByName[baseNameA];
+                const pokeDataB = pokemonByName[baseNameB];
+                let dexNumA = pokeDataA ? parseInt(pokeDataA.dexNumber) : 999;
+                let dexNumB = pokeDataB ? parseInt(pokeDataB.dexNumber) : 999;
+                
+                // Si même numéro de Pokédex, trier par forme (normal < mega < primo < deoxys)
+                if (dexNumA === dexNumB) {
+                    const getFormOrder = (name) => {
+                        if (name.includes('Mega')) return 1;
+                        if (name.includes('Primal')) return 2;
+                        if (name.startsWith('Deoxys')) {
+                            if (name.includes('Normal')) return 3;
+                            if (name.includes('Attack')) return 4;
+                            if (name.includes('Defense')) return 5;
+                        }
+                        return 0; // Forme normale
+                    };
+                    return getFormOrder(a.Name) - getFormOrder(b.Name);
+                }
+                return dexNumA - dexNumB;
+            });
             displayPokemons(sortedData);
             
             // Ajouter l'événement de filtrage
@@ -81,6 +117,18 @@ window.addEventListener('DOMContentLoaded', function() {
                 filterAndDisplay();
             });
             
+            // Fonction utilitaire pour extraire le nom de base d'un Pokémon
+            function getBaseName(pokemonName) {
+                if (pokemonName.includes('Mega')) {
+                    return pokemonName.split('Mega')[0];
+                } else if (pokemonName.includes('Primal')) {
+                    return pokemonName.split('Primal')[0];
+                } else if (pokemonName.startsWith('Deoxys')) {
+                    return 'Deoxys';
+                }
+                return pokemonName;
+            }
+            
             // Fonction combinée de filtrage et recherche
             function filterAndDisplay() {
                 const selectedType = typeFilter.value;
@@ -91,44 +139,84 @@ window.addEventListener('DOMContentLoaded', function() {
                 
                 // Filtrer par type
                 if (selectedType !== 'all') {
-                    filteredData = filteredData.filter(pokemon => pokemon['Type 1'] === selectedType);
+                    filteredData = filteredData.filter(pokemon => 
+                        pokemon['Type 1'] === selectedType || pokemon['Type 2'] === selectedType
+                    );
                 }
                 
                 // Filtrer par nom
                 if (searchQuery) {
                     filteredData = filteredData.filter(pokemon => {
-                        let baseName = pokemon.Name;
-                        let isMega = false;
-                        if (pokemon.Name.includes('Mega')) {
-                            baseName = pokemon.Name.split('Mega')[0];
-                            isMega = true;
-                        }
+                        let baseName = getBaseName(pokemon.Name);
                         const pokemonData = pokemonByName[baseName];
                         let frenchName = pokemonData ? pokemonData.name_fr : baseName;
-                        if (isMega) {
+                        
+                        // Ajouter les préfixes/suffixes appropriés
+                        if (pokemon.Name.includes('Mega')) {
                             frenchName = 'Méga-' + frenchName;
+                        } else if (pokemon.Name.includes('Primal')) {
+                            frenchName = frenchName + ' Primo';
+                        } else if (pokemon.Name.startsWith('Deoxys')) {
+                            if (pokemon.Name.includes('Attack')) {
+                                frenchName = frenchName + ' (Forme Attaque)';
+                            } else if (pokemon.Name.includes('Defense')) {
+                                frenchName = frenchName + ' (Forme Défense)';
+                            } else if (pokemon.Name.includes('Normal')) {
+                                frenchName = frenchName + ' (Forme Normal)';
+                            }
                         }
+                        
                         return pokemon.Name.toLowerCase().includes(searchQuery) || 
                                frenchName.toLowerCase().includes(searchQuery) ||
-                               (isMega && 'mega'.includes(searchQuery));
+                               'mega'.includes(searchQuery) ||
+                               'primo'.includes(searchQuery) ||
+                               'deoxys'.includes(searchQuery);
                     });
                 }
                 
                 // Trier selon l'option sélectionnée
                 filteredData = [...filteredData].sort((a, b) => {
                     switch(sortOption) {
+                        case 'pokedex': {
+                            // Tri par numéro de Pokédex
+                            let baseNameA = getBaseName(a.Name);
+                            let baseNameB = getBaseName(b.Name);
+                            const pokeDataA = pokemonByName[baseNameA];
+                            const pokeDataB = pokemonByName[baseNameB];
+                            let dexNumA = pokeDataA ? parseInt(pokeDataA.dexNumber) : 999;
+                            let dexNumB = pokeDataB ? parseInt(pokeDataB.dexNumber) : 999;
+                            
+                            // Si même numéro de Pokédex, trier par forme (normal < mega < primo < deoxys)
+                            if (dexNumA === dexNumB) {
+                                const getFormOrder = (name) => {
+                                    if (name.includes('Mega')) return 1;
+                                    if (name.includes('Primal')) return 2;
+                                    if (name.startsWith('Deoxys')) {
+                                        if (name.includes('Normal')) return 3;
+                                        if (name.includes('Attack')) return 4;
+                                        if (name.includes('Defense')) return 5;
+                                    }
+                                    return 0; // Forme normale
+                                };
+                                return getFormOrder(a.Name) - getFormOrder(b.Name);
+                            }
+                            return dexNumA - dexNumB;
+                        }
                         case 'type':
                             return a['Type 1'].localeCompare(b['Type 1']);
-                        case 'name':
-                            let baseNameA = a.Name.includes('Mega') ? a.Name.split('Mega')[0] : a.Name;
-                            let baseNameB = b.Name.includes('Mega') ? b.Name.split('Mega')[0] : b.Name;
+                        case 'name': {
+                            let baseNameA = getBaseName(a.Name);
+                            let baseNameB = getBaseName(b.Name);
                             const dataA = pokemonByName[baseNameA];
                             const dataB = pokemonByName[baseNameB];
                             let nameA = dataA ? dataA.name_fr : baseNameA;
                             let nameB = dataB ? dataB.name_fr : baseNameB;
                             if (a.Name.includes('Mega')) nameA = 'Méga-' + nameA;
                             if (b.Name.includes('Mega')) nameB = 'Méga-' + nameB;
+                            if (a.Name.includes('Primal')) nameA = nameA + ' Primo';
+                            if (b.Name.includes('Primal')) nameB = nameB + ' Primo';
                             return nameA.localeCompare(nameB);
+                        }
                         case 'hp':
                             return b.HP - a.HP;
                         case 'attack':
@@ -274,13 +362,32 @@ window.addEventListener('DOMContentLoaded', function() {
             const primaryTypeIconHTML = primaryTypeIcon ? `<img src="${primaryTypeIcon}" class="type-icon type-icon-header type-icon-${primaryTypeClass}" alt="${typeNames[primaryType]}">` : '';
 
             // Obtenir le nom français si disponible
-            // Gérer les Mega évolutions (ex: "SceptileMega Sceptile" -> "Sceptile")
+            // Gérer les formes spéciales (Mega, Primal, Deoxys)
             let baseName = pokemon.Name;
             let isMega = false;
+            let isPrimal = false;
+            let isDeoxys = false;
+            let deoxysForm = '';
+            
             if (pokemon.Name.includes('Mega')) {
                 // Extraire le nom de base (avant "Mega")
                 baseName = pokemon.Name.split('Mega')[0];
                 isMega = true;
+            } else if (pokemon.Name.includes('Primal')) {
+                // Extraire le nom de base (avant "Primal")
+                baseName = pokemon.Name.split('Primal')[0];
+                isPrimal = true;
+            } else if (pokemon.Name.startsWith('Deoxys')) {
+                // Gérer les formes de Deoxys
+                baseName = 'Deoxys';
+                isDeoxys = true;
+                if (pokemon.Name.includes('Attack')) {
+                    deoxysForm = 'Attaque';
+                } else if (pokemon.Name.includes('Defense')) {
+                    deoxysForm = 'Défense';
+                } else if (pokemon.Name.includes('Normal')) {
+                    deoxysForm = 'Normal';
+                }
             }
             
             const pokemonData = pokemonByName[baseName];
@@ -288,14 +395,26 @@ window.addEventListener('DOMContentLoaded', function() {
             let displayName = pokemonData ? pokemonData.name_fr : baseName;
             if (isMega) {
                 displayName = 'Méga-' + displayName;
+            } else if (isPrimal) {
+                displayName = displayName + ' Primo';
+            } else if (isDeoxys && deoxysForm) {
+                displayName = displayName + ' (Forme ' + deoxysForm + ')';
             }
             
-            // Pour les Mega évolutions, utiliser l'image mega si disponible
+            // Pour les formes spéciales, utiliser l'image correspondante si disponible
             let imageUrl;
             if (isMega && pokemonData && megaMapping[baseName]) {
                 // Utiliser l'ID spécifique du Mega Pokemon depuis le mapping
                 const megaId = megaMapping[baseName];
                 imageUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${megaId}.png`;
+            } else if (isPrimal && pokemonData && primalMapping[baseName]) {
+                // Utiliser l'ID spécifique de la forme Primo depuis le mapping
+                const primalId = primalMapping[baseName];
+                imageUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${primalId}.png`;
+            } else if (isDeoxys && deoxysMapping[pokemon.Name]) {
+                // Utiliser l'ID spécifique de la forme de Deoxys depuis le mapping
+                const deoxysId = deoxysMapping[pokemon.Name];
+                imageUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${deoxysId}.png`;
             } else {
                 imageUrl = pokemonData ? pokemonData.image : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemonNumber}.png`;
             }
@@ -385,16 +504,15 @@ window.addEventListener('DOMContentLoaded', function() {
                 });
             }
         });
-        
         // Ajouter les gestionnaires d'événements pour les boutons d'achat
         const buyButtons = document.querySelectorAll('.buy-button');
         buyButtons.forEach(button => {
-            button.addEventListener('click', function(e) {
+            button.addEventListener('click', async function(e) {
                 e.stopPropagation(); // Empêcher le retournement de la carte
                 const pokemonName = this.getAttribute('data-pokemon-name');
                 const price = parseInt(this.getAttribute('data-price'));
                 
-                const result = ShopSystem.buyPokemon(pokemonName, price);
+                const result = await ShopSystem.buyPokemon(pokemonName, price);
                 
                 if (result.success) {
                     // Afficher un message de succès
@@ -408,25 +526,37 @@ window.addEventListener('DOMContentLoaded', function() {
                         let filteredData = allPokemonData;
                         
                         if (selectedType !== 'all') {
-                            filteredData = filteredData.filter(pokemon => pokemon['Type 1'] === selectedType);
+                            filteredData = filteredData.filter(pokemon => 
+                                pokemon['Type 1'] === selectedType || pokemon['Type 2'] === selectedType
+                            );
                         }
                         
                         if (searchQuery) {
                             filteredData = filteredData.filter(pokemon => {
-                                let baseName = pokemon.Name;
-                                let isMega = false;
-                                if (pokemon.Name.includes('Mega')) {
-                                    baseName = pokemon.Name.split('Mega')[0];
-                                    isMega = true;
-                                }
+                                let baseName = getBaseName(pokemon.Name);
                                 const pokemonData = pokemonByName[baseName];
                                 let frenchName = pokemonData ? pokemonData.name_fr : baseName;
-                                if (isMega) {
+                                
+                                // Ajouter les préfixes/suffixes appropriés
+                                if (pokemon.Name.includes('Mega')) {
                                     frenchName = 'Méga-' + frenchName;
+                                } else if (pokemon.Name.includes('Primal')) {
+                                    frenchName = frenchName + ' Primo';
+                                } else if (pokemon.Name.startsWith('Deoxys')) {
+                                    if (pokemon.Name.includes('Attack')) {
+                                        frenchName = frenchName + ' (Forme Attaque)';
+                                    } else if (pokemon.Name.includes('Defense')) {
+                                        frenchName = frenchName + ' (Forme Défense)';
+                                    } else if (pokemon.Name.includes('Normal')) {
+                                        frenchName = frenchName + ' (Forme Normal)';
+                                    }
                                 }
+                                
                                 return pokemon.Name.toLowerCase().includes(searchQuery) || 
                                        frenchName.toLowerCase().includes(searchQuery) ||
-                                       (isMega && 'mega'.includes(searchQuery));
+                                       'mega'.includes(searchQuery) ||
+                                       'primo'.includes(searchQuery) ||
+                                       'deoxys'.includes(searchQuery);
                             });
                         }
                         
@@ -467,6 +597,7 @@ window.addEventListener('DOMContentLoaded', function() {
     
     // Fonction pour afficher des notifications
     function showNotification(message, type) {
+        console.log('Notification:', message, 'Type:', type); // Debug
         // Supprimer les notifications existantes
         const existing = document.querySelector('.notification');
         if (existing) {
@@ -476,6 +607,8 @@ window.addEventListener('DOMContentLoaded', function() {
         const notification = document.createElement('div');
         notification.className = `notification ${type}`;
         notification.textContent = message;
+        notification.style.color = 'white'; // Force la couleur blanche
+        notification.style.fontSize = '1.2rem'; // Force la taille
         document.body.appendChild(notification);
         
         // Animation d'apparition
@@ -696,5 +829,27 @@ window.addEventListener('DOMContentLoaded', function() {
             statsCard.style.display = 'none';
             hideTimeout = null;
         }, 200);
+    }
+    
+    // Gestion du bouton retour en haut
+    const scrollToTopBtn = document.getElementById('scrollToTopBtn');
+    
+    if (scrollToTopBtn) {
+        // Afficher/masquer le bouton selon la position de scroll
+        window.addEventListener('scroll', () => {
+            if (window.pageYOffset > 300) {
+                scrollToTopBtn.classList.add('visible');
+            } else {
+                scrollToTopBtn.classList.remove('visible');
+            }
+        });
+        
+        // Action au clic : retour en haut avec smooth scroll
+        scrollToTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
     }
 });
