@@ -60,6 +60,22 @@ nav ul a:hover {
     transition: 0.2s;
 }
 
+.icon-medium {
+    width: 48px;
+    height: 48px;
+    vertical-align: middle;
+    margin-right: 0px;
+    margin-bottom: 8px;
+}
+
+.icon-big {
+    width: 64px;
+    height: 64px;
+    vertical-align: middle;
+    margin-right: 0px;
+    margin-bottom: 0px;
+}
+
 /* Affichage des crédits dans la navbar */
 nav ul .credits-nav {
     background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
