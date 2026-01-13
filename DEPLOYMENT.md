@@ -80,17 +80,43 @@ PORT=8000
 
 ## 🚀 Étape 4 : Configurer l'application Node.js dans AlwaysData
 
-1. Dans AlwaysData, allez dans **Sites** > **Ajouter un site**
-2. Ou modifiez votre site existant
-3. Choisissez **Node.js** comme type d'application
-4. Configuration :
-   - **Type** : Node.js
-   - **Command** : `node server.js` ou `npm start`
-   - **Working directory** : Le chemin vers votre dossier
-   - **Port** : Laissez vide (AlwaysData gère automatiquement)
-   - **Environment** : Cliquez sur **Advanced** et ajoutez vos variables d'environnement
+1. Dans AlwaysData, allez dans **Sites** > **Ajouter un site** (ou modifiez votre site existant)
 
-5. Sauvegardez
+2. Configuration de base :
+   - **Addresses** : Votre domaine (ex: `pokemon.votre-compte.alwaysdata.net`)
+   - **Type** : Node.js
+   - **Version** : Dernière version stable (16 ou supérieur)
+
+3. Configuration de l'application :
+   - **Command** : `node start.js` (n'utilisez PAS `npm start`)
+   - **Working directory** : `/home/lthomassin/www/pokemon` (remplacez lthomassin par votre compte)
+   - **Application port** : Laisser VIDE (AlwaysData gère automatiquement via la variable PORT)
+   
+   ⚠️ **IMPORTANT** : Si vous uploadez les fichiers dans un sous-dossier comme `/home/votre_compte/www/pokemon`, 
+   assurez-vous que le **Working directory** pointe vers ce dossier complet !
+
+4. Variables d'environnement :
+   
+   Cliquez sur **Environment variables** et ajoutez :
+   
+   ```
+   DB_HOST=mysql-votre_compte.alwaysdata.net
+   DB_USER=votre_compte_374918
+   DB_PASSWORD=votre_mot_de_passe_mysql
+   DB_NAME=votre_compte_pokemon
+   DB_PORT=3306
+   SESSION_SECRET=votre_secret_aleatoire_complexe_ici
+   NODE_ENV=production
+   ```
+   
+   **IMPORTANT** : 
+   - Remplacez TOUTES les valeurs par vos vraies informations
+   - Ne mettez PAS de guillemets autour des valeurs
+   - Le SESSION_SECRET doit être unique et complexe
+
+5. Sauvegardez et attendez que l'application démarre (environ 30 secondes)
+
+6. Vérifiez les logs : **Sites** > Votre site > **Logs** pour voir si tout fonctionne
 
 ## 🌐 Étape 5 : Configurer le domaine
 
@@ -110,6 +136,39 @@ PORT=8000
    - Lancement de parties
 
 ## 🔧 Dépannage
+
+### "Connection to upstream failed: Upstream not ready"
+
+C'est l'erreur la plus courante. Elle signifie que Node.js ne démarre pas. Causes possibles :
+
+1. **Variables d'environnement manquantes**
+   - Allez dans Sites > Votre site > **Environment variables**
+   - Vérifiez que TOUTES les variables sont définies (DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, SESSION_SECRET, NODE_ENV)
+   - Pas de guillemets, pas d'espaces avant/après le nom
+
+2. **Mauvais identifiants MySQL**
+   - Vérifiez dans **Bases de données** > **MySQL** vos vrais identifiants
+   - Le format est souvent : `votre_compte_XXXXXX` pour l'utilisateur
+   - Le host est : `mysql-votre_compte.alwaysdata.net`
+
+3. **Dépendances manquantes**
+   - Connectez-vous en SSH : `ssh votre_compte@ssh-votre_compte.alwaysdata.net`
+   - Allez dans votre dossier : `cd www/pokemon`
+   - Exécutez : `npm install`
+   - Vérifiez que `node_modules` existe et contient les dépendances
+
+4. **Mauvais chemin de travail**
+   - Dans la configuration du site, le Working directory doit être le chemin COMPLET
+   - Format : `/home/votre_compte/www/pokemon` (pas de ~ ou de chemin relatif)
+
+5. **Port non configuré**
+   - Ne définissez PAS de port fixe dans la configuration du site
+   - AlwaysData passe automatiquement la variable d'environnement PORT
+
+6. **Consultez les logs**
+   - Sites > Votre site > **Logs**
+   - Les logs montreront l'erreur exacte
+   - Cherchez les lignes avec ❌ ou ERROR
 
 ### Erreur "Cannot connect to MySQL"
 

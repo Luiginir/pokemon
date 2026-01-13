@@ -468,8 +468,11 @@ async function initGame() {
             };
         });
         
-        // Afficher le nombre de Pokémons débloqués
+        // Attendre que ShopSystem soit initialisé avant de continuer
         if (typeof ShopSystem !== 'undefined') {
+            // Initialiser ShopSystem et attendre qu'il soit prêt
+            await ShopSystem.init();
+            
             const unlockedCount = allPokemons.filter(p => ShopSystem.isPokemonUnlocked(p.Name)).length;
             const totalCount = allPokemons.length;
             console.log(`📊 Pokémons débloqués: ${unlockedCount}/${totalCount}`);
@@ -480,7 +483,7 @@ async function initGame() {
                 unlockedCountElement.textContent = unlockedCount;
             }
             
-            // Charger les decks dans le sélecteur
+            // Charger les decks dans le sélecteur (maintenant que les données sont chargées)
             loadDecksIntoSelector();
             
             // Afficher un avertissement si pas assez de Pokémons

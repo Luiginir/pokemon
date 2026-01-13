@@ -4,17 +4,18 @@
 
 module.exports = {
     db: {
-        host: process.env.DB_HOST || 'localhost',
-        user: process.env.DB_USER || 'root',
-        password: process.env.DB_PASSWORD || '',
-        database: process.env.DB_NAME || 'pokemon_game',
+        host: process.env.DB_HOST || 'mysql-lthomassin.alwaysdata.net',
+        user: process.env.DB_USER || '374918',
+        password: process.env.DB_PASSWORD || 'Ingretho452004!',
+        database: process.env.DB_NAME || 'lthomassin_pokemon',
         port: process.env.DB_PORT || 3306,
         waitForConnections: true,
         connectionLimit: 10,
-        queueLimit: 0
+        queueLimit: 0,
+        connectTimeout: 10000
     },
     session: {
-        secret: process.env.SESSION_SECRET || 'pokemon-secret-key-2026-change-me-in-production',
+        secret: process.env.SESSION_SECRET || '54dc1d8f2c356dfb5d54e1629cb5ad50',
         resave: false,
         saveUninitialized: false,
         cookie: { 
@@ -22,5 +23,5 @@ module.exports = {
             maxAge: 7 * 24 * 60 * 60 * 1000 // 7 jours
         }
     },
-    port: process.env.PORT || 3000
+    port: parseInt(process.env.PORT) || 8080
 };

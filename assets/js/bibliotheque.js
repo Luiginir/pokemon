@@ -35,13 +35,12 @@ window.addEventListener('DOMContentLoaded', function() {
         fetch('assets/data/pokemons.json').then(response => response.json()),
         fetch('assets/data/pokemons_gen3_fr.json').then(response => response.json())
     ])
-        .then(([pokemonData, frenchNamesData]) => {
+        .then(async ([pokemonData, frenchNamesData]) => {
             allPokemonData = pokemonData;
             frenchNames = frenchNamesData;
             
-            // Initialiser les Pokémons de départ
-            ShopSystem.initializeStarterPokemon(allPokemonData);
-            ShopSystem.updateCreditsDisplay();
+            // Initialiser le système avec les Pokémons de départ
+            await ShopSystem.init(allPokemonData);
             
             // Créer un map pour lier le nom anglais aux données françaises
             Object.entries(frenchNamesData).forEach(([dexNum, data]) => {
