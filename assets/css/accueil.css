@@ -55,32 +55,54 @@
         }
 
         .nav-button {
+            overflow: hidden;
             display: flex;
-            flex-direction: column;
             align-items: center;
-            justify-content: center;
-            gap: 10px;
-            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
-            border: 3px solid #f0c000;
+            justify-content: flex-start;
+            gap: 0;
+            background-color: #ffffff;
+            border: 3px solid #a39352;
             border-radius: 20px;
-            padding: 30px 20px;
+            /* padding: 30px 20px; */
             text-decoration: none;
             color: #1f2937;
             font-weight: 700;
             font-size: 1.2rem;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 0  #f0c000, 0 8px 20px rgba(0, 0, 0, 0.2);
             position: relative;
+            min-height: 120px;
+            overflow: hidden;
+            transition: all 0.3s ease;
         }
 
         .nav-button:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 8px 0 #f0c000, 0 16px 30px rgba(0, 0, 0, 0.3);
+            /* background-color: #f0c000; */
+            transition: all 0.3s ease;
         }
+
+        
 
         .nav-button:active {
             transform: translateY(-2px);
             box-shadow: 0 2px 0 #f0c000, 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-image {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #a39352;
+            width: 40%;
+            flex-shrink: 0;
+            border-radius: 0 50% 50% 0;
+            height: 200%;
+            transition: ease all 0.3s;
+        }
+
+        .nav-button:hover .nav-image {
+            width: 50%;
+            transition: ease all 0.3s;
+            background-color: #ffcc00;
         }
 
         .nav-icon {
@@ -99,21 +121,47 @@
             text-transform: uppercase;
             letter-spacing: 1px;
             display: flex;
+            flex-direction: column;
             align-items: center;
+            justify-content: center;
             gap: 12px;
+            width: 67%;
+            
         }
 
         .pokeball {
-            width: 30px;
-            height: 30px;
+            position: absolute;
+            width: 170px;
+            height: 170px;
+            top: 0%;
+            left: -10%;
             transition: transform 0.6s ease;
+            opacity: 0.8;
+            transition: all 0.3s ease ;
+            filter: grayscale(100%);
         }
 
         .nav-button:hover .pokeball {
-            transform: rotate(360deg);
+            transform: rotate(45deg);
+            opacity: 1;
+            transition: all 0.3s ease  ;
+            filter: none;
         }
 
-        @media (max-width: 768px) {
+        #play {
+            border-color: #925785;
+        
+        }
+
+        #play .nav-image {
+            background-color: #925785;
+        }
+
+        #play:hover .nav-image {
+            background-color: #d334b0 ;
+        }
+
+        /* @media (max-width: 768px) {
             .site-title {
                 font-size: 2rem;
             }
@@ -137,4 +185,4 @@
                 width: 40px;
                 height: 40px;
             }
-        }
+        } */
