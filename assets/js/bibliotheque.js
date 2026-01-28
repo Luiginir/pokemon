@@ -2,6 +2,7 @@ window.addEventListener('DOMContentLoaded', function() {
     const gridContainer = document.querySelector('.bibliotheque .grid');
     const typeFilter = document.getElementById('typeFilter');
     const sortBy = document.getElementById('sortBy');
+    const ownershipFilter = document.getElementById('ownershipFilter');
     let allPokemonData = [];
     let frenchNames = {};
     let pokemonByName = {}; // Map pour lier nom anglais -> données françaises
@@ -116,6 +117,11 @@ window.addEventListener('DOMContentLoaded', function() {
                 filterAndDisplay();
             });
             
+            // Filtre par possession de pokémons
+            ownershipFilter.addEventListener('change', function() {
+                filterAndDisplay();
+            });
+            
             // Fonction utilitaire pour extraire le nom de base d'un Pokémon
             function getBaseName(pokemonName) {
                 if (pokemonName.includes('Mega')) {
@@ -133,8 +139,25 @@ window.addEventListener('DOMContentLoaded', function() {
                 const selectedType = typeFilter.value;
                 const searchQuery = searchInput.value.toLowerCase();
                 const sortOption = sortBy.value;
+                const ownershipOption = ownershipFilter.value;
                 
                 let filteredData = allPokemonData;
+                
+                // Filtrer par possession de pokémons
+                if (ownershipOption !== 'all') {
+                    const unlockedPokemon = ShopSystem.getUnlockedPokemon();
+                    if (ownershipOption === 'owned') {
+                        // Afficher uniquement les possédés
+                        filteredData = filteredData.filter(pokemon => 
+                            unlockedPokemon.includes(pokemon.Name)
+                        );
+                    } else if (ownershipOption === 'not-owned') {
+                        // Afficher uniquement les non-possédés
+                        filteredData = filteredData.filter(pokemon => 
+                            !unlockedPokemon.includes(pokemon.Name)
+                        );
+                    }
+                }
                 
                 // Filtrer par type
                 if (selectedType !== 'all') {
@@ -154,7 +177,7 @@ window.addEventListener('DOMContentLoaded', function() {
                         if (pokemon.Name.includes('Mega')) {
                             frenchName = 'Méga-' + frenchName;
                         } else if (pokemon.Name.includes('Primal')) {
-                            frenchName = frenchName + ' Primo';
+                            frenchName = 'Primo-' + frenchName;
                         } else if (pokemon.Name.startsWith('Deoxys')) {
                             if (pokemon.Name.includes('Attack')) {
                                 frenchName = frenchName + ' (Forme Attaque)';
@@ -212,8 +235,8 @@ window.addEventListener('DOMContentLoaded', function() {
                             let nameB = dataB ? dataB.name_fr : baseNameB;
                             if (a.Name.includes('Mega')) nameA = 'Méga-' + nameA;
                             if (b.Name.includes('Mega')) nameB = 'Méga-' + nameB;
-                            if (a.Name.includes('Primal')) nameA = nameA + ' Primo';
-                            if (b.Name.includes('Primal')) nameB = nameB + ' Primo';
+                            if (a.Name.includes('Primal')) nameA = 'Primo-' + nameA;
+                            if (b.Name.includes('Primal')) nameB = 'Primo-' + nameB;
                             return nameA.localeCompare(nameB);
                         }
                         case 'hp':
@@ -395,7 +418,7 @@ window.addEventListener('DOMContentLoaded', function() {
             if (isMega) {
                 displayName = 'Méga-' + displayName;
             } else if (isPrimal) {
-                displayName = displayName + ' Primo';
+                displayName = 'Primo-' + displayName;
             } else if (isDeoxys && deoxysForm) {
                 displayName = displayName + ' (Forme ' + deoxysForm + ')';
             }
@@ -540,7 +563,7 @@ window.addEventListener('DOMContentLoaded', function() {
                                 if (pokemon.Name.includes('Mega')) {
                                     frenchName = 'Méga-' + frenchName;
                                 } else if (pokemon.Name.includes('Primal')) {
-                                    frenchName = frenchName + ' Primo';
+                                    frenchName = 'Primo-' + frenchName;
                                 } else if (pokemon.Name.startsWith('Deoxys')) {
                                     if (pokemon.Name.includes('Attack')) {
                                         frenchName = frenchName + ' (Forme Attaque)';

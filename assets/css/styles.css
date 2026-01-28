@@ -12,7 +12,7 @@ body {
     margin: 0;
     padding: 0;
     bottom: 0;
-    min-height: 100vh;
+    min-height: 120vh;
 }
 
 /* Grille animée style Pokédex */
@@ -262,11 +262,4 @@ nav {
 
 .scroll-to-top:active {
     transform: translateY(-2px);
-}
-
-.title-img {
-    display: block;
-    margin: -50px auto;
-    max-width: 350px;
-    height: auto;
 }

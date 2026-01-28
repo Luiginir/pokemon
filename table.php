@@ -13,17 +13,23 @@ error_reporting(E_ALL);
     <link rel="stylesheet" href="assets/css/table.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="assets/js/navbar.js" defer></script>
     <script src="assets/js/table.js" defer></script>
 </head>
 
 <body>
     <header>
         <nav>
+            <div class="burger-menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
             <div class="nav-links">
                 <a href="index.html">Accueil</a>
                 <a href="bibliotheque.html">Boutique</a>
                 <a href="deck-builder.html">Mes Decks</a>
-                <a href="table.php">Simulation</a>
+                <a href="table.html">Simulation</a>
                 <a href="game.html">Jouer</a>
             </div>
             <div class="nav-user">

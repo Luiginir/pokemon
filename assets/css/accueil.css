@@ -257,28 +257,75 @@ body::after {
   font-family: "PokemonSolid", sans-serif;
 }
 
-/* @media (max-width: 768px) {
-            .site-title {
-                font-size: 2rem;
-            }
+/* Responsive Design */
+@media (max-width: 768px) {
+  .site-title {
+    font-size: 2rem;
+    letter-spacing: 3px;
+  }
 
-            .site-description {
-                font-size: 1rem;
-                padding: 0 10px;
-            }
+  .site-description {
+    font-size: 1rem;
+    padding: 0 10px;
+  }
 
-            .nav-container {
-                grid-template-columns: 1fr;
-                max-width: 400px;
-            }
+  .nav-container {
+    grid-template-columns: 1fr;
+    max-width: 400px;
+  }
 
-            .nav-button {
-                padding: 20px 16px;
-                font-size: 1.1rem;
-            }
+  .nav-button {
+    min-height: 100px;
+    font-size: 1.1rem;
+  }
 
-            .nav-icon {
-                width: 40px;
-                height: 40px;
-            }
-        } */
+  .pokeball {
+    width: 120px;
+    height: 120px;
+    left: -5%;
+  }
+
+  .nav-text h2 {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .site-title {
+    font-size: 1.5rem;
+    letter-spacing: 2px;
+  }
+
+  .site-description {
+    font-size: 0.9rem;
+  }
+
+  .nav-container {
+    gap: 15px;
+  }
+
+  .nav-button {
+    min-height: 80px;
+    border-width: 2px;
+    border-radius: 15px;
+  }
+
+  .pokeball {
+    width: 80px;
+    height: 80px;
+    left: 0%;
+  }
+
+  .nav-text h2 {
+    font-size: 1rem;
+    letter-spacing: 1px;
+  }
+
+  .nav-image {
+    width: 35%;
+  }
+
+  .nav-button:hover .nav-image {
+    width: 45%;
+  }
+}
