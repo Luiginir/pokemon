@@ -120,6 +120,34 @@ nav {
     padding: 0 20px;
 }
 
+.burger-menu {
+    display: none;
+    flex-direction: column;
+    cursor: pointer;
+    gap: 5px;
+    z-index: 10001;
+}
+
+.burger-menu span {
+    width: 25px;
+    height: 3px;
+    background-color: #333;
+    transition: all 0.3s ease;
+    border-radius: 3px;
+}
+
+.burger-menu.active span:nth-child(1) {
+    transform: rotate(45deg) translate(8px, 8px);
+}
+
+.burger-menu.active span:nth-child(2) {
+    opacity: 0;
+}
+
+.burger-menu.active span:nth-child(3) {
+    transform: rotate(-45deg) translate(7px, -7px);
+}
+
 .nav-links {
     display: flex;
     align-items: center;
@@ -262,4 +290,91 @@ nav {
 
 .scroll-to-top:active {
     transform: translateY(-2px);
+}
+
+.title-img {
+    max-width: 350px;
+    height: auto;
+    margin: -50px auto;
+    display: block;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    header {
+        height: auto;
+        min-height: 60px;
+    }
+
+    nav {
+        flex-wrap: wrap;
+        position: relative;
+    }
+
+    .burger-menu {
+        display: flex;
+    }
+
+    .nav-links {
+        position: fixed;
+        top: 60px;
+        left: 0;
+        width: 100%;
+        background-color: white;
+        flex-direction: column;
+        gap: 0;
+        padding: 0;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .nav-links.active {
+        max-height: 300px;
+        padding: 10px 0;
+    }
+
+    .nav-links a {
+        width: 100%;
+        padding: 15px 20px;
+        border-radius: 0;
+        text-align: left;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .nav-links a:hover {
+        background-color: rgba(200, 200, 200, 0.2);
+        padding-inline: 20px;
+    }
+
+    .nav-user {
+        flex-wrap: wrap;
+        gap: 8px;
+        font-size: 0.9rem;
+    }
+
+    .credits-nav {
+        padding: 6px 12px;
+        font-size: 0.95rem;
+    }
+
+    .credits-nav .credits-display {
+        font-size: 1.1rem;
+    }
+
+    .user-nav {
+        padding: 6px 12px;
+        font-size: 0.9rem;
+    }
+
+    .logout-btn {
+        padding: 6px 12px;
+        font-size: 0.85rem;
+    }
+
+    .title-img {
+        max-width: 250px;
+        margin: -30px auto;
+    }
 }
