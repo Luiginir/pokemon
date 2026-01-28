@@ -8,9 +8,7 @@ a {
 }
 
 body {
-    background: #7ddaff;
-    background: linear-gradient(180deg, rgba(125, 218, 255, 1) 0%, rgb(122, 82, 204) 100%);
-    background-size: 100%;
+    background-color: #343341;
     margin: 0;
     padding: 0;
     bottom: 0;
@@ -58,6 +56,7 @@ body::before {
   animation: gridScroll 20s linear infinite;
   pointer-events: none;
   opacity: 0.8;
+  z-index: -1;
 }
 
 /* Points lumineux style Pokédex */
@@ -107,7 +106,7 @@ header {
     z-index: 9999;
     position: sticky;
     top: 0;
-    background-color: rgba(0, 0, 0, 0.8);
+    background-color: white;
     backdrop-filter: blur(10px);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     height: 60px;
@@ -131,7 +130,7 @@ nav {
     padding-inline: 16px;
     padding-block: 8px;
     border-radius: 10px;
-    color: rgb(255, 255, 255);
+    color: #333;
     transition: 0.2s;
 }
 
@@ -263,4 +262,11 @@ nav {
 
 .scroll-to-top:active {
     transform: translateY(-2px);
+}
+
+.title-img {
+    display: block;
+    margin: -50px auto;
+    max-width: 350px;
+    height: auto;
 }

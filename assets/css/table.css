@@ -26,7 +26,7 @@ h2 {
 
 .shuffle-btn {
     padding: 8px 16px;
-    background-color: #333;
+    background-color: #1976d2;
     color: white;
     border: none;
     border-radius: 8px;
@@ -37,11 +37,10 @@ h2 {
     align-items: center;
     gap: 6px;
     transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    opacity: 100%;
 }
 
 .shuffle-btn:hover {
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.5);
     padding: 8px 18px;
 }
 
@@ -69,7 +68,7 @@ h2 {
     justify-content: center;
     gap: 10px;
     margin: 10px 0;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(255, 255, 255, 0.25);
     width: 200px;
     padding: 20px;
     border-radius: 16px;
@@ -98,6 +97,59 @@ select {
 .heatmap-section p {
     margin-bottom: 20px;
     opacity: 0.8;
+}
+
+.team-probability-summary {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0px;
+    margin: 30px auto;
+    padding: 25px;
+    background: white;
+    border-radius: 12px;
+    max-width: 700px;
+}
+
+.team-prob-card {
+    flex: 1;
+    text-align: center;
+    padding: 20px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.team-prob-card.winning {
+    background-color: rgba(76, 175, 80, 1);
+}
+
+.team-prob-card.losing {
+    background-color: rgba(244, 67, 54, 1);
+}
+
+.team-prob-card h3 {
+    margin: 0 0 10px 0;
+    font-size: 18px;
+    color: #fff;
+}
+
+.team-prob-value {
+    font-size: 42px;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+.team-prob-label {
+    font-size: 14px;
+    opacity: 0.9;
+    margin-top: 5px;
+}
+
+.vs-separator {
+    font-size: 32px;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.7);
 }
 
 .analysis-container {
@@ -154,14 +206,38 @@ select {
 }
 
 #heatmap-table .corner-cell {
-    background: rgba(0, 0, 0, 0.7);
+    background: linear-gradient(to top right, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.5) 49.5%, rgba(255, 255, 255, 0.3) 49.5%, rgba(255, 255, 255, 0.3) 50.5%, rgba(0, 0, 0, 0.7) 50.5%, rgba(0, 0, 0, 0.7) 100%);
     position: sticky;
     top: 0;
     left: 0;
     z-index: 3;
-    font-size: 9px;
     min-width: 100px;
-    padding: 5px;
+    padding: 0;
+    height: 100px;
+}
+
+#heatmap-table .corner-cell .diagonal-content {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+#heatmap-table .corner-cell .team1-label {
+    position: absolute;
+    top: 10px;
+    right: 8px;
+    font-size: 10px;
+    font-weight: bold;
+    color: white;
+}
+
+#heatmap-table .corner-cell .team2-label {
+    position: absolute;
+    bottom: 10px;
+    left: 8px;
+    font-size: 10px;
+    font-weight: bold;
+    color: white;
 }
 
 #heatmap-table .header-cell {
@@ -234,6 +310,7 @@ select {
     font-size: 10px;
     cursor: pointer;
     transition: transform 0.1s;
+    color: black;
 }
 
 #heatmap-table .data-cell:hover {

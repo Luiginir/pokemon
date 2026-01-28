@@ -9,7 +9,7 @@
 /* Section liste des decks */
 .decks-list-section {
     flex: 0 0 300px;
-    background: rgba(0, 0, 0, 0.8);
+    background: white;
     border-radius: 15px;
     padding: 20px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
@@ -19,14 +19,14 @@
 
 .decks-list-section h2 {
     margin-top: 0;
-    color: #ffffff;
+    color: #333;
     font-size: 1.5rem;
 }
 
 .new-deck-btn {
     width: 100%;
     padding: 12px;
-    background-color: #37b24d;
+    background-color: #1976d2;
     border: none;
     border-radius: 10px;
     color: white;
@@ -38,7 +38,7 @@
 }
 
 .new-deck-btn:hover {
-    background-color: #2f9642;
+    background-color: #1561ac;
 }
 
 .decks-list {
@@ -102,7 +102,7 @@
 /* Éditeur de deck */
 .deck-editor {
     flex: 1;
-    background: rgba(0, 0, 0, 0.8);
+    background: white;
     border-radius: 15px;
     padding: 25px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
@@ -125,7 +125,7 @@
 
 .editor-header h2 {
     margin: 0;
-    color: #ffffff;
+    color: #333;
 }
 
 .close-btn {
@@ -152,18 +152,18 @@
     display: block;
     font-weight: bold;
     margin-bottom: 8px;
-    color: #ffffff;
+    color: #333;
 }
 
 .deck-info input {
     width: 100%;
     padding: 12px;
-    background-color: rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.5);
+    background-color: white;
+    border: 1px solid #ccc;
     border-radius: 8px;
     font-size: 1rem;
     transition: border-color 0.3s;
-    color: #ffffff;
+    color: #333;
 }
 
 .deck-info input:focus {
@@ -175,11 +175,11 @@
 .deck-counter {
     margin-top: 15px;
     padding: 10px;
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: white;
     border-radius: 8px;
     text-align: center;
     font-size: 1.1rem;
-    color: #ffffff;
+    color: #333;
 }
 
 .deck-counter strong {
@@ -194,7 +194,7 @@
 
 .deck-slots h3 {
     margin-top: 0;
-    color: #ffffff;
+    color: #333;
 }
 
 .slots-grid {
@@ -202,7 +202,7 @@
     grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
     gap: 10px;
     padding: 15px;
-    background: rgba(0, 0, 0, 0.05);
+    background: white;
     border-radius: 10px;
 }
 
@@ -284,11 +284,11 @@
 .filter-bar input,
 .filter-bar select {
     padding: 10px;
-    background-color: rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.5);
+    background-color: white;
+    border: 1px solid #ccc;
     border-radius: 8px;
     font-size: 0.95rem;
-    color: #ffffff;
+    color: #333;
 }
 
 .filter-bar input {
@@ -380,8 +380,7 @@
 }
 
 .save-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(81, 207, 102, 0.4);
+    background-color: #1561ac;
 }
 
 .save-btn:disabled {

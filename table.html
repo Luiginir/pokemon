@@ -31,8 +31,8 @@
         </nav>
     </header>
     
-    <h1>Simulation de combat</h1>
-    <h3>Simulez votre combat Pokémon et voyez quelle est la meilleure combinaison</h3>
+    <img src="./assets/images/simulation_title.png" class="title-img" alt="titre">
+    
     <div class="select">
         <div class="team-header">
             <h2>Equipe 1</h2>
@@ -57,6 +57,9 @@
     <div class="heatmap-section">
         <h2>Tableau de Comparaison (Heatmap)</h2>
         <p>Probabilité de victoire du Pokémon en ligne contre le Pokémon en colonne</p>
+        <div id="team-probability-summary" class="team-probability-summary" style="display: none;">
+            <!-- JS will populate this -->
+        </div>
         <div class="analysis-container">
             <div class="heatmap-container">
                 <table id="heatmap-table">
@@ -67,11 +70,6 @@
                 <h3>Statistiques de Victoires</h3>
                 <canvas id="winRateChart"></canvas>
             </div>
-        </div>
-        <div class="heatmap-legend">
-            <span class="legend-label">0%</span>
-            <div class="legend-gradient"></div>
-            <span class="legend-label">100%</span>
         </div>
     </div>
 </body>
