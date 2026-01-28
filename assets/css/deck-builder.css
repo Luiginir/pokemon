@@ -9,7 +9,7 @@
 /* Section liste des decks */
 .decks-list-section {
     flex: 0 0 300px;
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(0, 0, 0, 0.8);
     border-radius: 15px;
     padding: 20px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
@@ -19,14 +19,14 @@
 
 .decks-list-section h2 {
     margin-top: 0;
-    color: #333;
+    color: #ffffff;
     font-size: 1.5rem;
 }
 
 .new-deck-btn {
     width: 100%;
     padding: 12px;
-    background: linear-gradient(135deg, #51cf66 0%, #37b24d 100%);
+    background-color: #37b24d;
     border: none;
     border-radius: 10px;
     color: white;
@@ -38,8 +38,7 @@
 }
 
 .new-deck-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(81, 207, 102, 0.4);
+    background-color: #2f9642;
 }
 
 .decks-list {
@@ -103,7 +102,7 @@
 /* Éditeur de deck */
 .deck-editor {
     flex: 1;
-    background: rgba(255, 255, 255, 0.95);
+    background: rgba(0, 0, 0, 0.8);
     border-radius: 15px;
     padding: 25px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
@@ -126,7 +125,7 @@
 
 .editor-header h2 {
     margin: 0;
-    color: #333;
+    color: #ffffff;
 }
 
 .close-btn {
@@ -153,16 +152,18 @@
     display: block;
     font-weight: bold;
     margin-bottom: 8px;
-    color: #333;
+    color: #ffffff;
 }
 
 .deck-info input {
     width: 100%;
     padding: 12px;
-    border: 2px solid #dee2e6;
+    background-color: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.5);
     border-radius: 8px;
     font-size: 1rem;
     transition: border-color 0.3s;
+    color: #ffffff;
 }
 
 .deck-info input:focus {
@@ -174,10 +175,11 @@
 .deck-counter {
     margin-top: 15px;
     padding: 10px;
-    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    background-color: rgba(255, 255, 255, 0.1);
     border-radius: 8px;
     text-align: center;
     font-size: 1.1rem;
+    color: #ffffff;
 }
 
 .deck-counter strong {
@@ -192,7 +194,7 @@
 
 .deck-slots h3 {
     margin-top: 0;
-    color: #333;
+    color: #ffffff;
 }
 
 .slots-grid {
@@ -212,7 +214,6 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: white;
     cursor: pointer;
     transition: all 0.3s ease;
     position: relative;
@@ -271,7 +272,7 @@
 /* Sélecteur de Pokémons */
 .pokemon-selector h3 {
     margin-top: 0;
-    color: #333;
+    color: #ffffff;
 }
 
 .filter-bar {
@@ -283,9 +284,11 @@
 .filter-bar input,
 .filter-bar select {
     padding: 10px;
-    border: 2px solid #dee2e6;
+    background-color: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.5);
     border-radius: 8px;
     font-size: 0.95rem;
+    color: #ffffff;
 }
 
 .filter-bar input {
@@ -372,7 +375,7 @@
 }
 
 .save-btn {
-    background: linear-gradient(135deg, #51cf66 0%, #37b24d 100%);
+    background-color: #1976d2;
     color: white;
 }
 
