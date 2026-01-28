@@ -1,13 +1,18 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="./assets/css/styles.css">
     <link rel="stylesheet" href="./assets/css/bibliotheque.css">
     <link rel="stylesheet" href="./assets/css/deck-builder.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+        integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
     <title>Créateur de Decks Pokémon</title>
 </head>
+
 <body>
     <header>
         <nav>
@@ -19,46 +24,53 @@
                 <a href="game.html">Jouer</a>
             </div>
             <div class="nav-user">
-                <span class="credits-nav"><span class="credits-display">0</span><img
-                        src="./assets/images/icons/poke-dollar.png" class="icon-small pokedollar" alt="Pokedollar"></span>
+                <span class="credits-nav"><span class="credits-display">0</span>
+                    <img src="./assets/images/icons/poke-dollar.png" class="icon-small pokedollar"
+                        alt="Pokedollar"></span>
                 <span class="user-nav">👤 <span class="username-display"></span></span>
                 <button onclick="ShopSystem.logout()" class="logout-btn">Déconnexion</button>
             </div>
         </nav>
     </header>
-    
-    <h1>⚔️ Créateur de Decks</h1>
+
+    <h1>
+        <img src="./assets/images/icons/pack-devon.png" class="icon-medium" alt="Pokedollar">
+        Créateur de Decks
+    </h1>
     <h3>Créez vos decks personnalisés avec vos Pokémons favoris !</h3>
-    
+
     <div class="deck-builder-container">
         <!-- Liste des decks existants -->
         <div class="decks-list-section">
-            <h2>📚 Mes Decks</h2>
-            <button id="newDeckBtn" class="new-deck-btn">➕ Nouveau Deck</button>
+            <h2>
+                <img src="./assets/images/icons/poke-ball.png" class="icon-medium" alt="Pokedollar">
+                Mes Deck
+            </h2>
+            <button id="newDeckBtn" class="new-deck-btn"><i class="fa-solid fa-plus"></i> Nouveau Deck</button>
             <div id="decksList" class="decks-list"></div>
         </div>
-        
+
         <!-- Éditeur de deck -->
         <div id="deckEditor" class="deck-editor hidden">
             <div class="editor-header">
                 <h2 id="editorTitle">Nouveau Deck</h2>
                 <button id="closeEditorBtn" class="close-btn">✕</button>
             </div>
-            
+
             <div class="deck-info">
                 <label for="deckName">Nom du deck :</label>
                 <input type="text" id="deckName" placeholder="Ex: Mon équipe de feu" maxlength="30">
-                
+
                 <div class="deck-counter">
                     <span>Pokémons sélectionnés : <strong id="selectedCount">0</strong> / 9</span>
                 </div>
             </div>
-            
+
             <div class="deck-slots">
                 <h3>Composition du deck</h3>
                 <div id="deckSlots" class="slots-grid"></div>
             </div>
-            
+
             <div class="pokemon-selector">
                 <h3>Sélectionnez vos Pokémons</h3>
                 <div class="filter-bar">
@@ -87,9 +99,9 @@
                 </div>
                 <div id="pokemonGrid" class="pokemon-grid"></div>
             </div>
-            
+
             <div class="editor-actions">
-                <button id="saveDeckBtn" class="save-btn">💾 Sauvegarder</button>
+                <button id="saveDeckBtn" class="save-btn">Sauvegarder</button>
                 <button id="cancelBtn" class="cancel-btn">Annuler</button>
             </div>
         </div>
@@ -98,4 +110,5 @@
 <script src="./assets/js/config.js"></script>
 <script src="./assets/js/shop-system.js"></script>
 <script src="./assets/js/deck-builder.js"></script>
+
 </html>
