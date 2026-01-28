@@ -1,8 +1,12 @@
+h1 {
+    color: white;
+}
+
 h3 {
     text-align: center;
     margin-top: 10px;
     font-size: 1.5rem;
-    color: #333;
+    color: white;
 }
 
 .filter-container {
@@ -24,7 +28,7 @@ h3 {
 .filter-container label {
     font-size: 18px;
     font-weight: bold;
-    color: #333;
+    color: white;
 }
 
 .filter-container input[type="text"] {

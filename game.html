@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,19 +10,22 @@
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <title>Arène Pokémon</title>
 </head>
+
 <body>
     <!-- Modal de connexion multijoueur -->
     <div id="multiplayerModal" class="modal">
         <div class="modal-content">
             <button class="close-modal" id="closeModalBtn">&times;</button>
-            <h2><img src="./assets/images/icons/poke-ball.png" class="icon-medium" alt="Pokeball">Mode de jeu</h2>
+            <img src="./assets/images/combats_title.png" class="title-img" alt="titre">
             <div class="modal-body">
                 <div class="first-col">
                     <div id="pokemonCountInfo" class="pokemon-count-info">
-                        <p><img src="./assets/images/icons/super-ball.png" class="icon-medium" alt="Pokeball"> <span id="unlockedCount">0</span> Pokémons débloqués</p>
-                        <p class="info-text">Gagnez des combats pour obtenir des crédits et débloquer de nouveaux Pokémons dans la Boutique !</p>
+                        <p><img src="./assets/images/icons/super-ball.png" class="icon-medium" alt="Pokeball"> <span
+                                id="unlockedCount">0</span> Pokémons débloqués</p>
+                        <p class="info-text">Gagnez des combats pour obtenir des crédits et débloquer de nouveaux
+                            Pokémons dans la Boutique !</p>
                     </div>
-                    
+
                     <!-- Sélection de deck -->
                     <div id="deckSelection" class="deck-selection">
                         <label for="deckSelector">Choisir un deck :</label>
@@ -46,7 +50,7 @@
                         <span class="mode-title">Rejoindre</span>
                         <span class="mode-desc">Rejoignez une partie</span>
                     </button>
-                
+
                     <!-- Section Hébergement -->
                     <div id="hostSection" class="connection-section hidden">
                         <h3>Partagez ce lien avec votre ami :</h3>
@@ -56,7 +60,7 @@
                         </div>
                         <p class="waiting-text">⏳ En attente d'un adversaire...</p>
                     </div>
-                    
+
                     <!-- Section Rejoindre -->
                     <div id="joinSection" class="connection-section hidden">
                         <h3>Entrez le code de la partie :</h3>
@@ -65,7 +69,7 @@
                             <button id="connectBtn">Rejoindre</button>
                         </div>
                     </div>
-                    
+
                     <!-- Statut de connexion -->
                     <div id="connectionStatus" class="connection-status hidden">
                         <p id="statusText">Connexion en cours...</p>
@@ -92,13 +96,14 @@
             </div>
             <div class="nav-user">
                 <span class="credits-nav"><span class="credits-display">0</span><img
-                        src="./assets/images/icons/poke-dollar.png" class="icon-small pokedollar" alt="Pokedollar"></span>
+                        src="./assets/images/icons/poke-dollar.png" class="icon-small pokedollar"
+                        alt="Pokedollar"></span>
                 <span class="user-nav">👤 <span class="username-display"></span></span>
                 <button onclick="ShopSystem.logout()" class="logout-btn">Déconnexion</button>
             </div>
         </nav>
     </header>
-    
+
     <div class="game-container">
         <!-- Deck adversaire (en haut) -->
         <div class="bot-deck-area">
@@ -133,7 +138,7 @@
         <div id="battleInfo" class="battle-info">
             <p>Choisissez votre Pokémon pour commencer!</p>
         </div>
-        
+
         <!-- Compteurs de Pokémon restants -->
         <div id="botCardsCounter" class="cards-counter cards-counter-left">
             <p>Pokémon adverses</p>
@@ -149,4 +154,5 @@
 <script src="assets/js/config.js"></script>
 <script src="assets/js/shop-system.js"></script>
 <script src="assets/js/game.js"></script>
+
 </html>

@@ -8,10 +8,7 @@ a {
 }
 
 body {
-    /* background: #7ddaff; */
-    background: #343341;
-    /* background: linear-gradient(180deg, rgba(125, 218, 255, 1) 0%, rgb(122, 82, 204) 100%); */
-    background-size: 100%;
+    background-color: #343341;
     margin: 0;
     padding: 0;
     bottom: 0;
@@ -59,6 +56,7 @@ body::before {
   animation: gridScroll 20s linear infinite;
   pointer-events: none;
   opacity: 0.8;
+  z-index: -1;
 }
 
 /* Points lumineux style Pokédex */
@@ -108,7 +106,7 @@ header {
     z-index: 9999;
     position: sticky;
     top: 0;
-    background-color: rgba(0, 0, 0, 0.8);
+    background-color: white;
     backdrop-filter: blur(10px);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     height: 60px;
@@ -132,7 +130,7 @@ nav {
     padding-inline: 16px;
     padding-block: 8px;
     border-radius: 10px;
-    color: rgb(255, 255, 255);
+    color: #333;
     transition: 0.2s;
 }
 
@@ -264,167 +262,4 @@ nav {
 
 .scroll-to-top:active {
     transform: translateY(-2px);
-}
-
-/* Menu Burger */
-.burger-menu {
-    display: none;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    gap: 6px;
-    padding: 8px;
-    margin-left: 10px;
-    z-index: 10000;
-    background-color: transparent;
-    border: none;
-    transition: all 0.3s ease;
-}
-
-.burger-menu:hover {
-    opacity: 0.8;
-}
-
-.burger-menu span {
-    display: block;
-    width: 28px;
-    height: 3px;
-    background-color: white;
-    border-radius: 3px;
-    transition: all 0.3s ease;
-    transform-origin: center;
-}
-
-.burger-menu.active span:nth-child(1) {
-    transform: translateY(9px) rotate(45deg);
-}
-
-.burger-menu.active span:nth-child(2) {
-    opacity: 0;
-    transform: scaleX(0);
-}
-
-.burger-menu.active span:nth-child(3) {
-    transform: translateY(-9px) rotate(-45deg);
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    nav {
-        position: relative;
-    }
-
-    .burger-menu {
-        display: flex;
-    }
-
-    .nav-links {
-        position: fixed;
-        top: 60px;
-        left: -100%;
-        width: 100%;
-        height: calc(100vh - 60px);
-        background-color: rgba(0, 0, 0, 0.95);
-        backdrop-filter: blur(10px);
-        flex-direction: column;
-        justify-content: flex-start;
-        padding-top: 30px;
-        gap: 0;
-        transition: left 0.3s ease;
-    }
-
-    .nav-links.active {
-        left: 0;
-    }
-
-    .nav-links a {
-        width: calc(100% - 40px);
-        margin: 8px 20px;
-        padding: 20px 30px;
-        font-size: 1.2rem;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 8px;
-    }
-
-    .nav-links a:hover {
-        background-color: rgba(200, 200, 200, 0.2);
-        padding-inline: 30px;
-    }
-
-    .nav-user {
-        flex-wrap: wrap;
-        gap: 8px;
-        font-size: 0.85rem;
-    }
-
-    .credits-nav {
-        padding: 6px 12px;
-        font-size: 0.9rem;
-    }
-
-    .credits-nav .credits-display {
-        font-size: 1.1rem;
-    }
-
-    .user-nav {
-        padding: 6px 12px;
-        font-size: 0.85rem;
-    }
-
-    .logout-btn {
-        padding: 6px 12px;
-        font-size: 0.85rem;
-    }
-}
-
-@media (max-width: 480px) {
-    header {
-        height: 50px;
-    }
-
-    nav {
-        padding: 0 10px;
-    }
-
-    .nav-links {
-        top: 50px;
-        height: calc(100vh - 50px);
-    }
-
-    .nav-user {
-        gap: 5px;
-        font-size: 0.75rem;
-    }
-
-    .credits-nav {
-        padding: 4px 8px;
-        font-size: 0.8rem;
-        border-radius: 8px;
-    }
-
-    .credits-nav .credits-display {
-        font-size: 0.95rem;
-    }
-
-    .icon-small {
-        height: 14px;
-    }
-
-    .user-nav {
-        padding: 4px 8px;
-        font-size: 0.75rem;
-        border-radius: 8px;
-    }
-
-    .logout-btn {
-        padding: 4px 10px;
-        font-size: 0.75rem;
-        border-radius: 8px;
-    }
-
-    h1 {
-        font-size: 2rem;
-        margin-top: 15px;
-    }
 }

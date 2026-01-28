@@ -27,6 +27,19 @@ window.addEventListener('DOMContentLoaded', function() {
         'Latios': '10063',
         'Rayquaza': '10079'
     };
+    
+    // Mapping manuel des formes Primo vers leurs IDs PokeAPI
+    const primalMapping = {
+        'Kyogre': '10077',
+        'Groudon': '10078'
+    };
+    
+    // Mapping manuel des formes de Deoxys vers leurs IDs PokeAPI
+    const deoxysMapping = {
+        'DeoxysNormal Forme': '386',
+        'DeoxysAttack Forme': '10001',
+        'DeoxysDefense Forme': '10002'
+    };
 
     // Fonction pour générer les sélecteurs de Pokémon dynamiquement
     function generatePokemonSelectors(containerSelector, startIndex, endIndex, pokemonData) {
@@ -63,7 +76,41 @@ window.addEventListener('DOMContentLoaded', function() {
                 const option = document.createElement('option');
                 const pokemonId = pokemon['#'] !== undefined ? pokemon['#'] : index;
                 option.value = pokemonId;
-                option.textContent = pokemon.Name;
+                // Utiliser le nom français si disponible
+                let baseName = pokemon.Name;
+                let isMega = false;
+                let isPrimal = false;
+                let isDeoxys = false;
+                let deoxysForm = '';
+                
+                if (pokemon.Name.includes('Mega')) {
+                    baseName = pokemon.Name.split('Mega')[0];
+                    isMega = true;
+                } else if (pokemon.Name.includes('Primal')) {
+                    baseName = pokemon.Name.split('Primal')[0];
+                    isPrimal = true;
+                } else if (pokemon.Name.startsWith('Deoxys')) {
+                    baseName = 'Deoxys';
+                    isDeoxys = true;
+                    if (pokemon.Name.includes('Attack')) {
+                        deoxysForm = 'Attaque';
+                    } else if (pokemon.Name.includes('Defense')) {
+                        deoxysForm = 'Défense';
+                    } else if (pokemon.Name.includes('Normal')) {
+                        deoxysForm = 'Normal';
+                    }
+                }
+                
+                const pokemonFrData = pokemonByName[baseName];
+                let displayName = pokemonFrData ? pokemonFrData.name_fr : baseName;
+                if (isMega) {
+                    displayName = 'Méga-' + displayName;
+                } else if (isPrimal) {
+                    displayName = displayName + ' Primo';
+                } else if (isDeoxys && deoxysForm) {
+                    displayName = displayName + ' (Forme ' + deoxysForm + ')';
+                }
+                option.textContent = displayName;
                 select.appendChild(option);
             });
             
@@ -132,22 +179,37 @@ window.addEventListener('DOMContentLoaded', function() {
         });
         
         if (pokemon) {
-            // Gérer les Mega évolutions
+            // Gérer les formes spéciales (Mega, Primal, Deoxys)
             let baseName = pokemon.Name;
             let isMega = false;
+            let isPrimal = false;
+            let isDeoxys = false;
+            
             if (pokemon.Name.includes('Mega')) {
                 baseName = pokemon.Name.split('Mega')[0];
                 isMega = true;
+            } else if (pokemon.Name.includes('Primal')) {
+                baseName = pokemon.Name.split('Primal')[0];
+                isPrimal = true;
+            } else if (pokemon.Name.startsWith('Deoxys')) {
+                baseName = 'Deoxys';
+                isDeoxys = true;
             }
             
             const pokemonData = pokemonByName[baseName];
             const pokemonNumber = pokemonData ? pokemonData.dexNumber : (pokemon.Number + 251);
             
-            // Pour les Mega évolutions, utiliser l'image mega si disponible
+            // Pour les formes spéciales, utiliser l'image correspondante si disponible
             let imageUrl;
             if (isMega && pokemonData && megaMapping[baseName]) {
                 const megaId = megaMapping[baseName];
                 imageUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${megaId}.png`;
+            } else if (isPrimal && pokemonData && primalMapping[baseName]) {
+                const primalId = primalMapping[baseName];
+                imageUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${primalId}.png`;
+            } else if (isDeoxys && deoxysMapping[pokemon.Name]) {
+                const deoxysId = deoxysMapping[pokemon.Name];
+                imageUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${deoxysId}.png`;
             } else {
                 imageUrl = pokemonData ? pokemonData.image : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemonNumber}.png`;
             }
@@ -177,39 +239,111 @@ window.addEventListener('DOMContentLoaded', function() {
     
     // Convertir la probabilité en couleur (rouge à vert)
     function probabilityToColor(probability) {
-        // 0% = rouge (255, 0, 0), 50% = jaune (255, 255, 0), 100% = vert (0, 255, 0)
-        let r, g, b;
+        // Couleurs vives et lumineuses inspirées du diagramme
+        let hue;
         
         if (probability <= 50) {
-            // Rouge vers Jaune (0-50%)
-            r = 255;
-            g = Math.round((probability / 50) * 255);
-            b = 0;
+            // Rouge (0°) vers Jaune (60°)
+            hue = (probability / 50) * 60;
         } else {
-            // Jaune vers Vert (50-100%)
-            r = Math.round(255 - ((probability - 50) / 50) * 255);
-            g = 255;
-            b = 0;
+            // Jaune (60°) vers Vert (120°)
+            hue = 60 + ((probability - 50) / 50) * 60;
         }
         
-        return `rgb(${r}, ${g}, ${b})`;
+        return `hsla(${hue}, 85%, 60%, 0.9)`;
     }
     
     // Obtenir le nom français d'un Pokemon
     function getFrenchName(pokemon) {
         let baseName = pokemon.Name;
         let isMega = false;
+        let isPrimal = false;
+        let isDeoxys = false;
+        let deoxysForm = '';
+        
         if (pokemon.Name.includes('Mega')) {
             baseName = pokemon.Name.split('Mega')[0];
             isMega = true;
+        } else if (pokemon.Name.includes('Primal')) {
+            baseName = pokemon.Name.split('Primal')[0];
+            isPrimal = true;
+        } else if (pokemon.Name.startsWith('Deoxys')) {
+            baseName = 'Deoxys';
+            isDeoxys = true;
+            if (pokemon.Name.includes('Attack')) {
+                deoxysForm = 'Attaque';
+            } else if (pokemon.Name.includes('Defense')) {
+                deoxysForm = 'Défense';
+            } else if (pokemon.Name.includes('Normal')) {
+                deoxysForm = 'Normal';
+            }
         }
         
         const pokemonData = pokemonByName[baseName];
         let displayName = pokemonData ? pokemonData.name_fr : baseName;
         if (isMega) {
             displayName = 'Méga-' + displayName;
+        } else if (isPrimal) {
+            displayName = displayName + ' Primo';
+        } else if (isDeoxys && deoxysForm) {
+            displayName = displayName + ' (Forme ' + deoxysForm + ')';
         }
         return displayName;
+    }
+    
+    // Calculer et afficher les probabilités globales des équipes
+    function updateTeamProbabilities() {
+        const team1 = getTeamPokemons(1, 9);
+        const team2 = getTeamPokemons(10, 18);
+        const summaryDiv = document.getElementById('team-probability-summary');
+        
+        if (!summaryDiv || team1.length === 0 || team2.length === 0) {
+            if (summaryDiv) summaryDiv.style.display = 'none';
+            return;
+        }
+        
+        // Compter les matchups gagnants pour chaque équipe
+        let team1Wins = 0;
+        let team2Wins = 0;
+        let totalMatchups = 0;
+        
+        team1.forEach(pokemon1 => {
+            team2.forEach(pokemon2 => {
+                const probability = calculateWinProbability(pokemon1, pokemon2);
+                totalMatchups++;
+                
+                if (probability > 50) {
+                    team1Wins++;
+                } else if (probability < 50) {
+                    team2Wins++;
+                }
+                // Si exactement 50%, on ne compte pour personne
+            });
+        });
+        
+        // Calculer les pourcentages basés sur les victoires
+        const team1WinProb = totalMatchups > 0 ? (team1Wins / totalMatchups) * 100 : 50;
+        const team2WinProb = totalMatchups > 0 ? (team2Wins / totalMatchups) * 100 : 50;
+        
+        // Déterminer quelle équipe est favorite
+        const team1Winning = team1WinProb > 50;
+        const team2Winning = team2WinProb > 50;
+        
+        summaryDiv.innerHTML = `
+            <div class="team-prob-card ${team1Winning ? 'winning' : 'losing'}">
+                <h3>Équipe 1</h3>
+                <div class="team-prob-value" style="color: ${team1WinProb > 50 ? '#fff' : '#fff'};">${team1WinProb.toFixed(1)}%</div>
+                <div class="team-prob-label">Probabilité de victoire</div>
+            </div>
+            <div class="vs-separator">VS</div>
+            <div class="team-prob-card ${team2Winning ? 'winning' : 'losing'}">
+                <h3>Équipe 2</h3>
+                <div class="team-prob-value" style="color: ${team2WinProb > 50 ? '#fff' : '#fff'};">${team2WinProb.toFixed(1)}%</div>
+                <div class="team-prob-label">Probabilité de victoire</div>
+            </div>
+        `;
+        
+        summaryDiv.style.display = 'flex';
     }
     
     // Générer le heatmap
@@ -221,8 +355,12 @@ window.addEventListener('DOMContentLoaded', function() {
         const team1 = getTeamPokemons(1, 9);
         const team2 = getTeamPokemons(10, 18);
         
+        // Mettre à jour les probabilités des équipes
+        updateTeamProbabilities();
+        
         if (team1.length === 0 || team2.length === 0) {
             table.innerHTML = '<tr><td>Sélectionnez des Pokémon dans les deux équipes</td></tr>';
+            updateTeamProbabilities();
             return;
         }
         
@@ -230,7 +368,10 @@ window.addEventListener('DOMContentLoaded', function() {
         
         // Créer l'en-tête (Équipe 2 en colonnes)
         const headerRow = document.createElement('tr');
-        headerRow.innerHTML = '<th class="corner-cell">Équipe 1 \\ Équipe 2</th>'; // Cellule en haut à gauche
+        const cornerCell = document.createElement('th');
+        cornerCell.className = 'corner-cell';
+        cornerCell.innerHTML = '<div class="diagonal-content"><span class="team1-label">Équipe 2</span><span class="team2-label">Équipe 1</span></div>';
+        headerRow.appendChild(cornerCell);
         
         team2.forEach(pokemon => {
             const th = document.createElement('th');
@@ -293,7 +434,7 @@ window.addEventListener('DOMContentLoaded', function() {
                 if (probability > 40 && probability < 60) {
                     cell.style.color = '#000';
                 } else {
-                    cell.style.color = '#fff';
+                    cell.style.color = '#000';
                 }
                 
                 row.appendChild(cell);
