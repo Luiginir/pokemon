@@ -15,7 +15,7 @@ h3 {
     flex-wrap: wrap;
 }
 
-.search-section, .filter-section, .sort-section {
+.search-section, .filter-section, .sort-section, .owned-filter-section {
     display: flex;
     align-items: center;
     gap: 10px;

@@ -2,6 +2,7 @@ window.addEventListener('DOMContentLoaded', function() {
     const gridContainer = document.querySelector('.bibliotheque .grid');
     const typeFilter = document.getElementById('typeFilter');
     const sortBy = document.getElementById('sortBy');
+    const ownershipFilter = document.getElementById('ownershipFilter');
     let allPokemonData = [];
     let frenchNames = {};
     let pokemonByName = {}; // Map pour lier nom anglais -> données françaises
@@ -116,6 +117,11 @@ window.addEventListener('DOMContentLoaded', function() {
                 filterAndDisplay();
             });
             
+            // Filtre par possession de pokémons
+            ownershipFilter.addEventListener('change', function() {
+                filterAndDisplay();
+            });
+            
             // Fonction utilitaire pour extraire le nom de base d'un Pokémon
             function getBaseName(pokemonName) {
                 if (pokemonName.includes('Mega')) {
@@ -133,8 +139,25 @@ window.addEventListener('DOMContentLoaded', function() {
                 const selectedType = typeFilter.value;
                 const searchQuery = searchInput.value.toLowerCase();
                 const sortOption = sortBy.value;
+                const ownershipOption = ownershipFilter.value;
                 
                 let filteredData = allPokemonData;
+                
+                // Filtrer par possession de pokémons
+                if (ownershipOption !== 'all') {
+                    const unlockedPokemon = ShopSystem.getUnlockedPokemon();
+                    if (ownershipOption === 'owned') {
+                        // Afficher uniquement les possédés
+                        filteredData = filteredData.filter(pokemon => 
+                            unlockedPokemon.includes(pokemon.Name)
+                        );
+                    } else if (ownershipOption === 'not-owned') {
+                        // Afficher uniquement les non-possédés
+                        filteredData = filteredData.filter(pokemon => 
+                            !unlockedPokemon.includes(pokemon.Name)
+                        );
+                    }
+                }
                 
                 // Filtrer par type
                 if (selectedType !== 'all') {
