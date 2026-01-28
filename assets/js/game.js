@@ -384,7 +384,7 @@ function createCardHTML(pokemon, index, isKO = false, currentHP = null) {
         : '';
     
     const type2IconHTML = hasSecondType && typeIcons[secondaryType]
-        ? `<img src="${typeIcons[secondaryType]}" alt="${secondaryType}" class="type-icon type-icon-${secondaryType}">`
+        ? `<img src="${typeIcons[secondaryType]}" alt="${secondaryType}" class="type-icon type-icon-header">`
         : '';
     
     const koClass = isKO ? 'ko-pokemon' : '';
@@ -432,12 +432,13 @@ function createCardHTML(pokemon, index, isKO = false, currentHP = null) {
                 <div class="card-back">
                     <div class="card-back-hp">
                         ${primaryTypeIconHTML}
+                        ${hasSecondType ? type2IconHTML : ''}
                         <span>${pokemon.HP} PV</span>
                     </div>
                     <div class="pokemon-image">
                         <img src="${pokemonImage}" alt="${pokemonName}">
                     </div>
-                    <p class="type">${typeNames[primaryType] || pokemon['Type 1']}${hasSecondType ? ' / ' + (typeNames[secondaryType] || pokemon['Type 2']) : ''}</p>
+                    <p class="type">${pokemonName}</p>
                     <div class="stats">
                         <p>Attaque: <b>${pokemon.Attack}</b></p>
                         <p>Défense: <b>${pokemon.Defense}</b></p>
