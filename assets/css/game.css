@@ -1005,3 +1005,239 @@ body {
     margin-top: 5px;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
+
+/* ====================================
+   OUTILS DE DÉVELOPPEMENT
+   ==================================== */
+
+.dev-tools {
+    position: fixed;
+    bottom: 10px;
+    left: 10px;
+    z-index: 9999;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 15px;
+    border-radius: 10px;
+    border: 2px solid #ffd700;
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.dev-tools small {
+    color: #999;
+    font-size: 0.75rem;
+    text-align: center;
+}
+
+.dev-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.dev-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.5);
+}
+
+/* Pour masquer en production, décommenter cette ligne */
+/* .dev-tools { display: none !important; } */
+
+/* ====================================
+   MODALES DE FIN DE JEU (VICTOIRE/DÉFAITE)
+   ==================================== */
+
+/* Modal de fond */
+.game-end-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    animation: fadeIn 0.3s ease;
+}
+
+.game-end-modal.hidden {
+    display: none;
+}
+
+/* Contenu de la modal */
+.game-end-modal-content {
+    padding: 40px;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    max-width: 500px;
+    animation: slideIn 0.5s ease;
+}
+
+/* Thème Victoire */
+.victory-theme {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* Thème Défaite */
+.defeat-theme {
+    background: linear-gradient(135deg, #fc5c65 0%, #eb3b5a 100%);
+}
+
+/* Icône principale (emoji/image) */
+.game-end-icon {
+    font-size: 120px; /* Augmenté de 80px à 120px */
+    margin-bottom: 20px;
+    line-height: 1;
+}
+
+/* Si vous utilisez des images au lieu d'emojis */
+.game-end-icon img {
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+}
+
+.victory-icon {
+    animation: bounce 1s infinite;
+}
+
+.defeat-icon {
+    animation: shake 0.5s ease-in-out;
+}
+
+/* Titre */
+.game-end-title {
+    color: white;
+    font-size: 2.5rem;
+    margin: 20px 0;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Messages */
+.game-end-message {
+    color: white;
+    font-size: 1.3rem;
+    margin: 20px 0;
+}
+
+.game-end-credits {
+    color: #ffd700;
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 20px 0;
+}
+
+.game-end-encouragement {
+    color: #ffd700;
+    font-size: 1.1rem;
+    margin: 20px 0;
+    font-style: italic;
+}
+
+/* Conteneur des boutons */
+.game-end-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+/* Boutons de base */
+.game-end-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: none;
+    padding: 15px 30px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.game-end-btn .btn-icon {
+    font-size: 1.2rem;
+    line-height: 1;
+}
+
+.game-end-btn .btn-text {
+    line-height: 1;
+}
+
+/* Bouton "Nouveau Combat" / "Réessayer" */
+.replay-btn {
+    background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+    color: #333;
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+}
+
+.replay-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 215, 0, 0.6);
+}
+
+/* Bouton "Accueil" pour victoire */
+.victory-theme .home-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: 2px solid white;
+    color: white;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.victory-theme .home-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+/* Bouton "Accueil" pour défaite */
+.defeat-theme .home-btn {
+    background: linear-gradient(135deg, #fc5c65 0%, #eb3b5a 100%);
+    border: 2px solid white;
+    color: white;
+    box-shadow: 0 4px 15px rgba(252, 92, 101, 0.4);
+}
+
+.defeat-theme .home-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(252, 92, 101, 0.6);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideIn {
+    from { 
+        transform: translateY(-50px); 
+        opacity: 0; 
+    }
+    to { 
+        transform: translateY(0); 
+        opacity: 1; 
+    }
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+    20%, 40%, 60%, 80% { transform: translateX(10px); }
+}
