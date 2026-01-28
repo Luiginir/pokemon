@@ -446,9 +446,37 @@ window.addEventListener('DOMContentLoaded', function() {
             const price = ShopSystem.calculatePrice(pokemon);
             const power = ShopSystem.calculatePower(pokemon);
             
+            // Vérifier les pré-requis d'évolution
+            const prerequisiteCheck = ShopSystem.checkEvolutionPrerequisites(pokemon.Name);
+            const hasPrerequisites = prerequisiteCheck.canBuy;
+            const requiredPokemon = prerequisiteCheck.requiredPokemon || null;
+            
+            // Obtenir le nom français du Pokémon requis
+            let requiredFrenchName = null;
+            if (requiredPokemon) {
+                let requiredBaseName = requiredPokemon;
+                if (requiredPokemon.includes('Mega')) {
+                    requiredBaseName = requiredPokemon.split('Mega')[0];
+                } else if (requiredPokemon.includes('Primal')) {
+                    requiredBaseName = requiredPokemon.split('Primal')[0];
+                }
+                const requiredData = pokemonByName[requiredBaseName];
+                requiredFrenchName = requiredData ? requiredData.name_fr : requiredPokemon;
+                
+                // Ajouter les préfixes
+                if (requiredPokemon.includes('Mega')) {
+                    requiredFrenchName = 'Méga-' + requiredFrenchName;
+                } else if (requiredPokemon.includes('Primal')) {
+                    requiredFrenchName = 'Primo-' + requiredFrenchName;
+                }
+            }
+            
             // Ajouter une classe pour les Pokémons verrouillés
             if (!isUnlocked) {
                 card.classList.add('locked');
+                if (!hasPrerequisites) {
+                    card.classList.add('prerequisite-locked');
+                }
             }
 
             card.innerHTML = `
@@ -481,11 +509,15 @@ window.addEventListener('DOMContentLoaded', function() {
                             <p>Défense: <b>${pokemon.Defense}</b></p>
                             <p>Puissance: <b>${power}</b></p>
                         </div>
-                        ${!isUnlocked ? `
-                            <button class="buy-button" data-pokemon-name="${pokemon.Name}" data-price="${price}">
-                                ${price} 💰
-                            </button>
-                        ` : '<div class="owned-message"> ✓ Possédé</div>'}
+                        ${!isUnlocked ? (
+                            !hasPrerequisites 
+                                ? `<button class="prerequisite-warning" data-required-pokemon="${requiredFrenchName}">
+                                    🔒 Nécessite ${requiredFrenchName}
+                                </button>`
+                                : `<button class="buy-button" data-pokemon-name="${pokemon.Name}" data-price="${price}">
+                                    ${price} 💰
+                                </button>`
+                        ) : '<div class="owned-message"> ✓ Possédé</div>'}
                     </div>
                 </div>
             `;
@@ -613,6 +645,16 @@ window.addEventListener('DOMContentLoaded', function() {
                     // Afficher un message d'erreur
                     showNotification(result.message, 'error');
                 }
+            });
+        });
+        
+        // Ajouter les gestionnaires d'événements pour les boutons de pré-requis
+        const prerequisiteButtons = document.querySelectorAll('.prerequisite-warning');
+        prerequisiteButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.stopPropagation(); // Empêcher le retournement de la carte
+                const requiredPokemon = this.getAttribute('data-required-pokemon');
+                showNotification(`${requiredPokemon} est nécessaire`, 'error');
             });
         });
     }
