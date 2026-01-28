@@ -1642,7 +1642,7 @@ document.addEventListener('keydown', (e) => {
     if (e.ctrlKey && e.key === 'v') {
         e.preventDefault();
         console.log('🏆 [DEV] Affichage de la modale de victoire');
-        showVictoryModal(500);
+        showVictoryModal(100);
     }
     // Ctrl + D = Test Défaite
     if (e.ctrlKey && e.key === 'd') {

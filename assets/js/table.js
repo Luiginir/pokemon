@@ -284,7 +284,7 @@ window.addEventListener('DOMContentLoaded', function() {
         if (isMega) {
             displayName = 'Méga-' + displayName;
         } else if (isPrimal) {
-            displayName = displayName + ' Primo';
+            displayName = 'Primo-' + displayName;
         } else if (isDeoxys && deoxysForm) {
             displayName = displayName + ' (Forme ' + deoxysForm + ')';
         }
@@ -592,18 +592,44 @@ window.addEventListener('DOMContentLoaded', function() {
     function getPokemonImage(pokemon) {
         let baseName = pokemon.Name;
         let isMega = false;
+        let isPrimal = false;
+        let isDeoxys = false;
+        
+        // Détecter les formes spéciales
         if (pokemon.Name.includes('Mega')) {
             baseName = pokemon.Name.split('Mega')[0];
             isMega = true;
+        } else if (pokemon.Name.includes('Primal')) {
+            baseName = pokemon.Name.split('Primal')[0];
+            isPrimal = true;
+        } else if (pokemon.Name.startsWith('Deoxys')) {
+            baseName = 'Deoxys';
+            isDeoxys = true;
         }
+        
         const pokemonData = pokemonByName[baseName];
         const pokemonNumber = pokemonData ? pokemonData.dexNumber : (pokemon.Number + 251);
+        
+        // Mega évolutions
         if (isMega && pokemonData && megaMapping[baseName]) {
             const megaId = megaMapping[baseName];
             return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${megaId}.png`;
-        } else {
-            return pokemonData ? pokemonData.image : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemonNumber}.png`;
         }
+        
+        // Formes Primo
+        if (isPrimal && pokemonData && primalMapping[baseName]) {
+            const primalId = primalMapping[baseName];
+            return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${primalId}.png`;
+        }
+        
+        // Formes Deoxys
+        if (isDeoxys && deoxysMapping[pokemon.Name]) {
+            const deoxysId = deoxysMapping[pokemon.Name];
+            return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${deoxysId}.png`;
+        }
+        
+        // Image normale
+        return pokemonData ? pokemonData.image : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemonNumber}.png`;
     }
 
     // Ajout des listeners sur les cellules du heatmap
@@ -720,7 +746,16 @@ window.addEventListener('DOMContentLoaded', function() {
     // Fonction pour générer le diagramme camembert
     function generateWinRateChart() {
         const canvas = document.getElementById('winRateChart');
-        if (!canvas) return;
+        if (!canvas) {
+            console.error('Canvas winRateChart introuvable');
+            return;
+        }
+        
+        // Vérifier que Chart.js est chargé
+        if (typeof Chart === 'undefined') {
+            console.error('Chart.js n\'est pas chargé');
+            return;
+        }
         
         const stats = calculateWinStatistics();
         
@@ -742,7 +777,11 @@ window.addEventListener('DOMContentLoaded', function() {
         const { colors, borderColors } = generateColors(topStats.length);
         
         const data = {
-            labels: topStats.map(s => getFrenchName(s.pokemon)),
+            labels: topStats.map(s => {
+                const name = getFrenchName(s.pokemon);
+                console.log('Label:', name); // Debug
+                return name;
+            }),
             datasets: [{
                 label: 'Nombre de victoires',
                 data: topStats.map(s => s.wins),
@@ -751,6 +790,8 @@ window.addEventListener('DOMContentLoaded', function() {
                 borderWidth: 2
             }]
         };
+        
+        console.log('Chart data:', data); // Debug
         
         const config = {
             type: 'pie',
@@ -785,12 +826,24 @@ window.addEventListener('DOMContentLoaded', function() {
             }
         };
         
-        // Détruire le graphique existant s'il existe
-        if (winRateChart) {
-            winRateChart.destroy();
+        // Détruire le graphique existant s'il existe (méthode recommandée)
+        const existingChart = Chart.getChart(canvas);
+        if (existingChart) {
+            existingChart.destroy();
         }
         
-        // Créer le nouveau graphique
-        winRateChart = new Chart(canvas, config);
+        // Détruire aussi la référence locale
+        if (winRateChart) {
+            winRateChart.destroy();
+            winRateChart = null;
+        }
+        
+        try {
+            // Créer le nouveau graphique
+            winRateChart = new Chart(canvas, config);
+            console.log('Chart créé avec succès'); // Debug
+        } catch (error) {
+            console.error('Erreur lors de la création du graphique:', error);
+        }
     }
 });
