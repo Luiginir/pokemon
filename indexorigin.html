@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Pokemon</title>
+    <link rel="stylesheet" href="./assets/css/styles.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-links">
+                <a href="index.html">Accueil</a>
+                <a href="bibliotheque.html">Boutique</a>
+                <a href="deck-builder.html">Mes Decks</a>
+                <a href="table.html">Simulation</a>
+                <a href="game.html">Jouer</a>
+            </div>
+            <div class="nav-user">
+                <span class="credits-nav"><span class="credits-display">0</span><img
+                        src="./assets/images/icons/poke-dollar.png" class="icon-small pokedollar" alt="Pokedollar"></span>
+                <span class="user-nav">👤 <span class="username-display"></span></span>
+                <button onclick="ShopSystem.logout()" class="logout-btn">Déconnexion</button>
+            </div>
+        </nav>
+    </header>
+</body>
+<script src="./assets/js/config.js"></script>
+<script src="./assets/js/shop-system.js"></script>
+</html>

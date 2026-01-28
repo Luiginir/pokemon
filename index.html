@@ -4,27 +4,55 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Data Pokemon</title>
-    <link rel="stylesheet" href="./assets/css/styles.css">
+    <link rel="stylesheet" href="./assets/css/accueil.css">
 </head>
 <body>
-    <header>
-        <nav>
-            <div class="nav-links">
-                <a href="index.html">Accueil</a>
-                <a href="bibliotheque.html">Boutique</a>
-                <a href="deck-builder.html">Mes Decks</a>
-                <a href="table.php">Simulation</a>
-                <a href="game.html">Jouer</a>
-            </div>
-            <div class="nav-user">
-                <span class="credits-nav"><span class="credits-display">0</span><img
-                        src="./assets/images/icons/poke-dollar.png" class="icon-small pokedollar" alt="Pokedollar"></span>
-                <span class="user-nav">👤 <span class="username-display"></span></span>
-                <button onclick="ShopSystem.logout()" class="logout-btn">Déconnexion</button>
-            </div>
-        </nav>
-    </header>
+    <div class="main-container">
+        <div class="header">
+            <h1 class="site-title">DATA POKÉMON</h1>
+            <p class="site-description">
+                Votre plateforme complète pour gérer vos cartes Pokémon, créer des decks stratégiques et simuler des combats épiques !
+            </p>
+        </div>
+
+        <div class="nav-container">
+            <a href="bibliotheque.html" class="nav-button">
+
+                <div class="nav-image">
+                    <img src="./assets/images/icons/pokeball.svg" alt="pokeball icon" class="pokeball">
+                </div>
+                <div class="nav-text">
+                    <h2>Boutique</h2>
+                </div> 
+            </a>
+
+            <a href="deck-builder.html" class="nav-button">
+                <div class="nav-image">
+                    <img src="./assets/images/icons/superball.svg" alt="super-ball icon" class="pokeball">
+                </div>
+                <div class="nav-text">
+                    <h2>Mes Decks</h2>
+                </div>
+            </a>
+
+            <a href="table.php" class="nav-button">
+                <div class="nav-image">
+                    <img src="./assets/images/icons/hyperball.svg" alt="pokeball icon" class="pokeball">
+                </div>
+                <div class="nav-text">
+                    <h2>Simulation</h2>
+                </div>
+            </a>
+
+            <a href="game.html" class="nav-button" id="play">
+                <div class="nav-image">
+                    <img src="./assets/images/icons/masterball.svg" alt="masterball icon" class="pokeball">
+                </div>
+                <div class="nav-text">
+                    <h2><strong>Jouer</strong></h2>
+                </div>
+            </a>
+        </div>
+    </div>
 </body>
-<script src="./assets/js/config.js"></script>
-<script src="./assets/js/shop-system.js"></script>
 </html>

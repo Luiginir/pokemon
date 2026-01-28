@@ -28,6 +28,52 @@ window.addEventListener('DOMContentLoaded', function() {
         'Rayquaza': '10079'
     };
 
+    // Fonction pour générer les sélecteurs de Pokémon dynamiquement
+    function generatePokemonSelectors(containerSelector, startIndex, endIndex, pokemonData) {
+        const container = document.querySelector(containerSelector);
+        if (!container) return;
+        
+        container.innerHTML = '';
+        
+        for (let i = startIndex; i <= endIndex; i++) {
+            const selectDiv = document.createElement('div');
+            selectDiv.className = 'pokemon-select';
+            
+            const label = document.createElement('label');
+            label.setAttribute('for', 'pokemon' + i);
+            label.textContent = 'Selectionner un pokemon';
+            
+            const imageContainer = document.createElement('div');
+            imageContainer.className = 'pokemon-image-container';
+            imageContainer.id = 'image-container-' + i;
+            
+            const img = document.createElement('img');
+            img.src = '';
+            img.alt = 'Pokemon';
+            img.className = 'pokemon-image';
+            img.id = 'image-' + i;
+            img.style.display = 'none';
+            imageContainer.appendChild(img);
+            
+            const select = document.createElement('select');
+            select.name = 'pokemon' + i;
+            select.id = 'pokemon' + i;
+            
+            pokemonData.forEach((pokemon, index) => {
+                const option = document.createElement('option');
+                const pokemonId = pokemon['#'] !== undefined ? pokemon['#'] : index;
+                option.value = pokemonId;
+                option.textContent = pokemon.Name;
+                select.appendChild(option);
+            });
+            
+            selectDiv.appendChild(label);
+            selectDiv.appendChild(imageContainer);
+            selectDiv.appendChild(select);
+            container.appendChild(selectDiv);
+        }
+    }
+
     // Charger les données Pokemon
     Promise.all([
         fetch('assets/data/pokemons.json').then(response => response.json()),
@@ -44,6 +90,10 @@ window.addEventListener('DOMContentLoaded', function() {
                     dexNumber: dexNum
                 };
             });
+            
+            // Générer dynamiquement les sélecteurs de Pokémon (pour table.html)
+            generatePokemonSelectors('#team1-deck', 1, 9, pokemonData);
+            generatePokemonSelectors('#team2-deck', 10, 18, pokemonData);
             
             // Initialiser les images pour tous les sélecteurs
             for (let i = 1; i <= 18; i++) {
