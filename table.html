@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulation</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="assets/css/table.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="assets/js/navbar.js" defer></script>
+    <script src="assets/js/table.js" defer></script>
+</head>
+
+<body>
+    <header>
+        <nav>
+            <div class="burger-menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <div class="nav-links">
+                <a href="index.html">Accueil</a>
+                <a href="bibliotheque.html">Boutique</a>
+                <a href="deck-builder.html">Mes Decks</a>
+                <a href="table.html">Simulation</a>
+                <a href="game.html">Jouer</a>
+            </div>
+            <div class="nav-user">
+                <span class="credits-nav"><span class="credits-display">0</span><img
+                        src="./assets/images/icons/poke-dollar.png" class="icon-small pokedollar" alt="Pokedollar"></span>
+                <span class="user-nav">👤 <span class="username-display"></span></span>
+                <button onclick="ShopSystem.logout()" class="logout-btn">Déconnexion</button>
+            </div>
+        </nav>
+    </header>
+    
+    <h1>Simulation de combat</h1>
+    <h3>Simulez votre combat Pokémon et voyez quelle est la meilleure combinaison</h3>
+    <div class="select">
+        <div class="team-header">
+            <h2>Equipe 1</h2>
+            <button class="shuffle-btn" id="shuffle-team1" title="Mélanger l'équipe 1">
+                <i class="fas fa-random"></i> Aléatoire
+            </button>
+        </div>
+        <div class="deck" id="team1-deck">
+            <!-- Généré dynamiquement par JavaScript -->
+        </div>
+        <div class="team-header">
+            <h2>Equipe 2</h2>
+            <button class="shuffle-btn" id="shuffle-team2" title="Mélanger l'équipe 2">
+                <i class="fas fa-random"></i> Aléatoire
+            </button>
+        </div>
+        <div class="deck" id="team2-deck">
+            <!-- Généré dynamiquement par JavaScript -->
+        </div>
+    </div>
+
+    <div class="heatmap-section">
+        <h2>Tableau de Comparaison (Heatmap)</h2>
+        <p>Probabilité de victoire du Pokémon en ligne contre le Pokémon en colonne</p>
+        <div class="analysis-container">
+            <div class="heatmap-container">
+                <table id="heatmap-table">
+                    <!-- JS -->
+                </table>
+            </div>
+            <div class="chart-container">
+                <h3>Statistiques de Victoires</h3>
+                <canvas id="winRateChart"></canvas>
+            </div>
+        </div>
+        <div class="heatmap-legend">
+            <span class="legend-label">0%</span>
+            <div class="legend-gradient"></div>
+            <span class="legend-label">100%</span>
+        </div>
+    </div>
+</body>
+
+</html>
