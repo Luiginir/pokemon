@@ -857,32 +857,46 @@ function animateBattle(result, callback) {
         }
         
         // Animation d'attaque du joueur
-        if (botCardElement && myDamage > 0) {
-            playerCardElement?.classList.add('attacking');
-            setTimeout(() => {
-                playerCardElement?.classList.remove('attacking');
-                botCardElement.classList.add('damaged');
-                // Afficher les dégâts
-                showDamage('bot', myDamage, opponentEffectiveness);
-                // Mettre à jour la barre de vie du bot
-                updateHealthBar('bot', opponentHP, botMaxHP);
-                setTimeout(() => botCardElement.classList.remove('damaged'), 400);
-            }, 250);
+        if (myDamage > 0) {
+            // Vérifier que les éléments existent avant d'ajouter les classes
+            if (playerCardElement) {
+                playerCardElement.classList.add('attacking');
+                setTimeout(() => {
+                    if (playerCardElement) playerCardElement.classList.remove('attacking');
+                    if (botCardElement) {
+                        botCardElement.classList.add('damaged');
+                        // Afficher les dégâts
+                        showDamage('bot', myDamage, opponentEffectiveness);
+                        // Mettre à jour la barre de vie du bot
+                        updateHealthBar('bot', opponentHP, botMaxHP);
+                        setTimeout(() => {
+                            if (botCardElement) botCardElement.classList.remove('damaged');
+                        }, 400);
+                    }
+                }, 250);
+            }
         }
         
         // Animation d'attaque du bot
         setTimeout(() => {
-            if (playerCardElement && opponentDamage > 0) {
-                botCardElement?.classList.add('attacking');
-                setTimeout(() => {
-                    botCardElement?.classList.remove('attacking');
-                    playerCardElement.classList.add('damaged');
-                    // Afficher les dégâts
-                    showDamage('player', opponentDamage, myEffectiveness);
-                    // Mettre à jour la barre de vie du joueur
-                    updateHealthBar('player', myHP, playerMaxHP);
-                    setTimeout(() => playerCardElement.classList.remove('damaged'), 400);
-                }, 250);
+            if (opponentDamage > 0) {
+                // Vérifier que les éléments existent avant d'ajouter les classes
+                if (botCardElement) {
+                    botCardElement.classList.add('attacking');
+                    setTimeout(() => {
+                        if (botCardElement) botCardElement.classList.remove('attacking');
+                        if (playerCardElement) {
+                            playerCardElement.classList.add('damaged');
+                            // Afficher les dégâts
+                            showDamage('player', opponentDamage, myEffectiveness);
+                            // Mettre à jour la barre de vie du joueur
+                            updateHealthBar('player', myHP, playerMaxHP);
+                            setTimeout(() => {
+                                if (playerCardElement) playerCardElement.classList.remove('damaged');
+                            }, 400);
+                        }
+                    }, 250);
+                }
             }
         }, 400);
         
@@ -900,20 +914,18 @@ function checkGameEnd() {
     const botPokemonAlive = botDeck.filter((p, i) => p !== null && botDeckHP[i] > 0).length;
     
     if (playerPokemonAlive === 0) {
-        updateGameInfo("💀 Vous avez perdu ! Tous vos Pokémon sont KO !");
+        showDefeatModal();
         return;
     }
     
     if (botPokemonAlive === 0) {
         // Le joueur a gagné ! Donner des crédits
         if (typeof ShopSystem !== 'undefined') {
-            const reward = ShopSystem.rewardWin();
-            updateGameInfo(`🏆 Félicitations ! Vous avez vaincu tous les Pokémon adverses ! +${reward.creditsEarned} crédits !`);
-            
-            // Afficher une notification animée
-            showCreditReward(reward.creditsEarned);
+            ShopSystem.rewardWin().then(reward => {
+                showVictoryModal(reward.creditsEarned);
+            });
         } else {
-            updateGameInfo("🏆 Félicitations ! Vous avez vaincu tous les Pokémon adverses !");
+            showVictoryModal(0);
         }
         return;
     }
@@ -1561,6 +1573,330 @@ function checkMultiplayerGameEnd() {
     displayDeck(botDeck, 'botDeck', false);
     
     updateGameInfo("Choisissez votre prochain Pokémon !");
+}
+
+// Fonction pour afficher la modale de victoire
+function showVictoryModal(creditsEarned) {
+    // Créer la modale
+    const modal = document.createElement('div');
+    modal.id = 'victoryModal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10000;
+        animation: fadeIn 0.3s ease;
+    `;
+    
+    const modalContent = document.createElement('div');
+    modalContent.style.cssText = `
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 40px;
+        border-radius: 20px;
+        text-align: center;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        max-width: 500px;
+        animation: slideIn 0.5s ease;
+    `;
+    
+    const trophy = document.createElement('div');
+    trophy.style.cssText = `
+        font-size: 80px;
+        margin-bottom: 20px;
+        animation: bounce 1s infinite;
+    `;
+    trophy.textContent = '🏆';
+    
+    const title = document.createElement('h2');
+    title.style.cssText = `
+        color: white;
+        font-size: 2.5rem;
+        margin: 20px 0;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    `;
+    title.textContent = 'Félicitations !';
+    
+    const message = document.createElement('p');
+    message.style.cssText = `
+        color: white;
+        font-size: 1.3rem;
+        margin: 20px 0;
+    `;
+    message.textContent = 'Vous avez vaincu tous les Pokémon adverses !';
+    
+    const creditsMessage = document.createElement('p');
+    creditsMessage.style.cssText = `
+        color: #ffd700;
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin: 20px 0;
+    `;
+    creditsMessage.textContent = creditsEarned > 0 ? `+${creditsEarned} crédits !` : '';
+    
+    const buttonsContainer = document.createElement('div');
+    buttonsContainer.style.cssText = `
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-top: 30px;
+    `;
+    
+    const replayButton = document.createElement('button');
+    replayButton.style.cssText = `
+        background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+        border: none;
+        color: #333;
+        padding: 15px 30px;
+        font-size: 1.1rem;
+        font-weight: bold;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+    `;
+    replayButton.textContent = '⚔️ Nouveau Combat';
+    replayButton.onmouseover = () => {
+        replayButton.style.transform = 'translateY(-2px)';
+        replayButton.style.boxShadow = '0 6px 20px rgba(255, 215, 0, 0.6)';
+    };
+    replayButton.onmouseout = () => {
+        replayButton.style.transform = 'translateY(0)';
+        replayButton.style.boxShadow = '0 4px 15px rgba(255, 215, 0, 0.4)';
+    };
+    replayButton.onclick = () => {
+        document.body.removeChild(modal);
+        window.location.href = 'game.html';
+    };
+    
+    const homeButton = document.createElement('button');
+    homeButton.style.cssText = `
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: 2px solid white;
+        color: white;
+        padding: 15px 30px;
+        font-size: 1.1rem;
+        font-weight: bold;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    `;
+    homeButton.textContent = '🏠 Accueil';
+    homeButton.onmouseover = () => {
+        homeButton.style.transform = 'translateY(-2px)';
+        homeButton.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.6)';
+    };
+    homeButton.onmouseout = () => {
+        homeButton.style.transform = 'translateY(0)';
+        homeButton.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.4)';
+    };
+    homeButton.onclick = () => {
+        document.body.removeChild(modal);
+        window.location.href = 'index.html';
+    };
+    
+    buttonsContainer.appendChild(replayButton);
+    buttonsContainer.appendChild(homeButton);
+    
+    modalContent.appendChild(trophy);
+    modalContent.appendChild(title);
+    modalContent.appendChild(message);
+    if (creditsEarned > 0) {
+        modalContent.appendChild(creditsMessage);
+    }
+    modalContent.appendChild(buttonsContainer);
+    
+    modal.appendChild(modalContent);
+    
+    // Ajouter les animations CSS
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    document.body.appendChild(modal);
+    
+    // Afficher la notification de crédits si applicable
+    if (creditsEarned > 0 && typeof showCreditReward !== 'undefined') {
+        showCreditReward(creditsEarned);
+    }
+}
+
+// Fonction pour afficher la modale de défaite
+function showDefeatModal() {
+    // Créer la modale
+    const modal = document.createElement('div');
+    modal.id = 'defeatModal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10000;
+        animation: fadeIn 0.3s ease;
+    `;
+    
+    const modalContent = document.createElement('div');
+    modalContent.style.cssText = `
+        background: linear-gradient(135deg, #fc5c65 0%, #eb3b5a 100%);
+        padding: 40px;
+        border-radius: 20px;
+        text-align: center;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        max-width: 500px;
+        animation: slideIn 0.5s ease;
+    `;
+    
+    const skull = document.createElement('div');
+    skull.style.cssText = `
+        font-size: 80px;
+        margin-bottom: 20px;
+        animation: shake 0.5s ease-in-out;
+    `;
+    skull.textContent = '💀';
+    
+    const title = document.createElement('h2');
+    title.style.cssText = `
+        color: white;
+        font-size: 2.5rem;
+        margin: 20px 0;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    `;
+    title.textContent = 'Défaite !';
+    
+    const message = document.createElement('p');
+    message.style.cssText = `
+        color: white;
+        font-size: 1.3rem;
+        margin: 20px 0;
+    `;
+    message.textContent = 'Tous vos Pokémon sont KO...';
+    
+    const encouragement = document.createElement('p');
+    encouragement.style.cssText = `
+        color: #ffd700;
+        font-size: 1.1rem;
+        margin: 20px 0;
+        font-style: italic;
+    `;
+    encouragement.textContent = 'Réessayez et devenez plus fort !';
+    
+    const buttonsContainer = document.createElement('div');
+    buttonsContainer.style.cssText = `
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-top: 30px;
+    `;
+    
+    const replayButton = document.createElement('button');
+    replayButton.style.cssText = `
+        background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+        border: none;
+        color: #333;
+        padding: 15px 30px;
+        font-size: 1.1rem;
+        font-weight: bold;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+    `;
+    replayButton.textContent = '⚔️ Réessayer';
+    replayButton.onmouseover = () => {
+        replayButton.style.transform = 'translateY(-2px)';
+        replayButton.style.boxShadow = '0 6px 20px rgba(255, 215, 0, 0.6)';
+    };
+    replayButton.onmouseout = () => {
+        replayButton.style.transform = 'translateY(0)';
+        replayButton.style.boxShadow = '0 4px 15px rgba(255, 215, 0, 0.4)';
+    };
+    replayButton.onclick = () => {
+        document.body.removeChild(modal);
+        window.location.href = 'game.html';
+    };
+    
+    const homeButton = document.createElement('button');
+    homeButton.style.cssText = `
+        background: linear-gradient(135deg, #fc5c65 0%, #eb3b5a 100%);
+        border: 2px solid white;
+        color: white;
+        padding: 15px 30px;
+        font-size: 1.1rem;
+        font-weight: bold;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(252, 92, 101, 0.4);
+    `;
+    homeButton.textContent = '🏠 Accueil';
+    homeButton.onmouseover = () => {
+        homeButton.style.transform = 'translateY(-2px)';
+        homeButton.style.boxShadow = '0 6px 20px rgba(252, 92, 101, 0.6)';
+    };
+    homeButton.onmouseout = () => {
+        homeButton.style.transform = 'translateY(0)';
+        homeButton.style.boxShadow = '0 4px 15px rgba(252, 92, 101, 0.4)';
+    };
+    homeButton.onclick = () => {
+        document.body.removeChild(modal);
+        window.location.href = 'index.html';
+    };
+    
+    buttonsContainer.appendChild(replayButton);
+    buttonsContainer.appendChild(homeButton);
+    
+    modalContent.appendChild(skull);
+    modalContent.appendChild(title);
+    modalContent.appendChild(message);
+    modalContent.appendChild(encouragement);
+    modalContent.appendChild(buttonsContainer);
+    
+    modal.appendChild(modalContent);
+    
+    // Ajouter les animations CSS
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+            20%, 40%, 60%, 80% { transform: translateX(10px); }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    document.body.appendChild(modal);
 }
 
 // Initialiser le jeu au chargement de la page
