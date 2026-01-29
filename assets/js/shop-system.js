@@ -10,6 +10,191 @@ const ShopSystem = {
     cachedData: null,
     currentUser: null,
     
+    // Mapping des chaînes d'évolution (Génération 3)
+    // Format: { "Pokemon évolution": "Pokemon pré-requis" }
+    evolutionChains: {
+        // Famille Geckogarde
+        'Grovyle': 'Treecko',
+        'Sceptile': 'Grovyle',
+        'SceptileMega Sceptile': 'Sceptile',
+        
+        // Famille Galifeu
+        'Combusken': 'Torchic',
+        'Blaziken': 'Combusken',
+        'BlazikenMega Blaziken': 'Blaziken',
+        
+        // Famille Flobio
+        'Marshtomp': 'Mudkip',
+        'Swampert': 'Marshtomp',
+        'SwampertMega Swampert': 'Swampert',
+        
+        // Famille Medhyena
+        'Mightyena': 'Poochyena',
+        
+        // Famille Zigzaton
+        'Linoone': 'Zigzagoon',
+        
+        // Famille Chenipotte
+        'Silcoon': 'Wurmple',
+        'Beautifly': 'Silcoon',
+        'Cascoon': 'Wurmple',
+        'Dustox': 'Cascoon',
+        
+        // Famille Nenupiot
+        'Lombre': 'Lotad',
+        'Ludicolo': 'Lombre',
+        
+        // Famille Grainipiot
+        'Nuzleaf': 'Seedot',
+        'Shiftry': 'Nuzleaf',
+        
+        // Famille Nirondelle
+        'Swellow': 'Taillow',
+        
+        // Famille Goelise
+        'Pelipper': 'Wingull',
+        
+        // Famille Tarsal
+        'Kirlia': 'Ralts',
+        'Gardevoir': 'Kirlia',
+        'GardevoirMega Gardevoir': 'Gardevoir',
+        'Gallade': 'Kirlia',
+        
+        // Famille Arakdo
+        'Masquerain': 'Surskit',
+        
+        // Famille Balignon
+        'Breloom': 'Shroomish',
+        
+        // Famille Parecool
+        'Vigoroth': 'Slakoth',
+        'Slaking': 'Vigoroth',
+        
+        // Famille Ningale
+        'Ninjask': 'Nincada',
+        'Shedinja': 'Nincada',
+        
+        // Famille Chuchmur
+        'Loudred': 'Whismur',
+        'Exploud': 'Loudred',
+        
+        // Famille Makuhita
+        'Hariyama': 'Makuhita',
+        
+        // Famille Azurill
+        'Marill': 'Azurill',
+        'Azumarill': 'Marill',
+        
+        // Famille Tarinor/Skitty
+        'Delcatty': 'Skitty',
+        
+        // Famille Tenefix
+        'SableyeMega Sableye': 'Sableye',
+        
+        // Famille Mysdibule
+        'MawileMega Mawile': 'Mawile',
+        
+        // Famille Galekid
+        'Lairon': 'Aron',
+        'Aggron': 'Lairon',
+        'AggronMega Aggron': 'Aggron',
+        
+        // Famille Meditikka
+        'Medicham': 'Meditite',
+        'MedichamMega Medicham': 'Medicham',
+        
+        // Famille Dynavolt
+        'Manectric': 'Electrike',
+        'ManectricMega Manectric': 'Manectric',
+        
+        // Famille Rozbouton
+        'Roselia': 'Budew',
+        'Roserade': 'Roselia',
+        
+        // Famille Gloupti
+        'Swalot': 'Gulpin',
+        
+        // Famille Carvanha
+        'Sharpedo': 'Carvanha',
+        'SharpedoMega Sharpedo': 'Sharpedo',
+        
+        // Famille Wailmer
+        'Wailord': 'Wailmer',
+        
+        // Famille Chamallot
+        'Camerupt': 'Numel',
+        'CameruptMega Camerupt': 'Camerupt',
+        
+        // Famille Chartor
+        'Grumpig': 'Spoink',
+        
+        // Famille Kraknoix
+        'Vibrava': 'Trapinch',
+        'Flygon': 'Vibrava',
+        
+        // Famille Cacnea
+        'Cacturne': 'Cacnea',
+        
+        // Famille Tylton
+        'Altaria': 'Swablu',
+        'AltariaMega Altaria': 'Altaria',
+        
+        // Famille Barloche
+        'Whiscash': 'Barboach',
+        
+        // Famille Ecrapince
+        'Crawdaunt': 'Corphish',
+        
+        // Famille Balbuto
+        'Claydol': 'Baltoy',
+        
+        // Famille Polichombr
+        'Banette': 'Shuppet',
+        'BanetteMega Banette': 'Banette',
+        
+        // Famille Skelenox
+        'Dusclops': 'Duskull',
+        'Dusknoir': 'Dusclops',
+        
+        // Famille Stalgamin
+        'Glalie': 'Snorunt',
+        'GlalieMega Glalie': 'Glalie',
+        'Froslass': 'Snorunt',
+        
+        // Famille Obalie
+        'Sealeo': 'Spheal',
+        'Walrein': 'Sealeo',
+        
+        // Famille Coquiperl
+        'Huntail': 'Clamperl',
+        'Gorebyss': 'Clamperl',
+        
+        // Famille Draby
+        'Shelgon': 'Bagon',
+        'Salamence': 'Shelgon',
+        'SalamenceMega Salamence': 'Salamence',
+        
+        // Famille Terhal
+        'Metang': 'Beldum',
+        'Metagross': 'Metang',
+        'MetagrossMega Metagross': 'Metagross',
+        
+        // Famille Latias
+        'LatiasMega Latias': 'Latias',
+        
+        // Famille Latios
+        'LatiosMega Latios': 'Latios',
+        
+        // Famille Kyogre
+        'KyogrePrimal Kyogre': 'Kyogre',
+        
+        // Famille Groudon
+        'GroudonPrimal Groudon': 'Groudon',
+        
+        // Famille Rayquaza
+        'RayquazaMega Rayquaza': 'Rayquaza'
+    },
+    
     // Initialiser le système
     async init(allPokemons = null) {
         try {
@@ -116,10 +301,40 @@ const ShopSystem = {
         return basePrice;
     },
     
+    // Vérifier si un Pokémon a les pré-requis nécessaires pour être acheté
+    checkEvolutionPrerequisites(pokemonName) {
+        // Vérifier si ce Pokémon nécessite un pré-requis
+        const requiredPokemon = this.evolutionChains[pokemonName];
+        
+        // Si aucun pré-requis n'est défini, le Pokémon peut être acheté
+        if (!requiredPokemon) {
+            return { canBuy: true };
+        }
+        
+        // Vérifier si le Pokémon pré-requis est débloqué
+        const isPrerequisiteUnlocked = this.isPokemonUnlocked(requiredPokemon);
+        
+        if (!isPrerequisiteUnlocked) {
+            return { 
+                canBuy: false, 
+                message: `Vous devez d'abord posséder ${requiredPokemon} pour débloquer ${pokemonName} !`,
+                requiredPokemon: requiredPokemon
+            };
+        }
+        
+        return { canBuy: true };
+    },
+    
     // Acheter un Pokémon
     async buyPokemon(pokemonName, price) {
         if (this.isPokemonUnlocked(pokemonName)) {
             return { success: false, message: 'Vous possédez déjà ce Pokémon!' };
+        }
+        
+        // Vérifier les pré-requis d'évolution
+        const prerequisiteCheck = this.checkEvolutionPrerequisites(pokemonName);
+        if (!prerequisiteCheck.canBuy) {
+            return { success: false, message: prerequisiteCheck.message };
         }
         
         if (this.getCredits() < price) {

@@ -148,7 +148,59 @@
             <p>Vos Pokémon</p>
             <span class="counter">0</span>
         </div>
+        
+        <!-- Outils de développement (à supprimer en production) -->
+        <div class="dev-tools">
+            <button class="dev-btn" onclick="showVictoryModal(500)">🏆 Test Victoire</button>
+            <button class="dev-btn" onclick="showDefeatModal()">💀 Test Défaite</button>
+            <small>Raccourcis: Ctrl+V (victoire) | Ctrl+D (défaite)</small>
+        </div>
     </div>
+
+    <!-- Modal de Victoire -->
+    <div id="victoryModal" class="game-end-modal hidden">
+        <div class="game-end-modal-content victory-theme">
+            <div class="game-end-icon victory-icon">
+                <img src="./assets/images/icons/roche-royale.png" alt="Roche Royale">
+            </div>
+            <h2 class="game-end-title">Félicitations !</h2>
+            <p class="game-end-message">Vous avez vaincu tous les Pokémon adverses !</p>
+            <p class="game-end-credits"></p>
+            <div class="game-end-buttons">
+                <button class="game-end-btn replay-btn">
+                    <span class="btn-icon"><img src="./assets/images/icons/poke-ball.png" alt="pokeball"></span>
+                    <span class="btn-text">Nouveau Combat</span>
+                </button>
+                <button class="game-end-btn home-btn">
+                    <span class="btn-icon"><img src="./assets/images/icons/passe-bateau.png" alt="passebateau"></span>
+                    <span class="btn-text">Accueil</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Défaite -->
+    <div id="defeatModal" class="game-end-modal hidden">
+        <div class="game-end-modal-content defeat-theme">
+            <div class="game-end-icon defeat-icon">
+                <img src="./assets/images/icons/rappel-max.png" alt="Rappel Max">
+            </div>
+            <h2 class="game-end-title">Défaite !</h2>
+            <p class="game-end-message">Tous vos Pokémon sont KO...</p>
+            <p class="game-end-encouragement">Réessayez et devenez plus fort !</p>
+            <div class="game-end-buttons">
+                <button class="game-end-btn replay-btn">
+                    <span class="btn-icon"><img src="./assets/images/icons/poke-ball.png" alt="pokeball"></span>
+                    <span class="btn-text">Réessayer</span>
+                </button>
+                <button class="game-end-btn home-btn">
+                    <span class="btn-icon"><img src="./assets/images/icons/passe-bateau.png" alt="passebateau"></span>
+                    <span class="btn-text">Accueil</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
 </body>
 <script src="assets/js/navbar.js"></script>
 <script src="assets/js/config.js"></script>

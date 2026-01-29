@@ -857,32 +857,46 @@ function animateBattle(result, callback) {
         }
         
         // Animation d'attaque du joueur
-        if (botCardElement && myDamage > 0) {
-            playerCardElement?.classList.add('attacking');
-            setTimeout(() => {
-                playerCardElement?.classList.remove('attacking');
-                botCardElement.classList.add('damaged');
-                // Afficher les dégâts
-                showDamage('bot', myDamage, opponentEffectiveness);
-                // Mettre à jour la barre de vie du bot
-                updateHealthBar('bot', opponentHP, botMaxHP);
-                setTimeout(() => botCardElement.classList.remove('damaged'), 400);
-            }, 250);
+        if (myDamage > 0) {
+            // Vérifier que les éléments existent avant d'ajouter les classes
+            if (playerCardElement) {
+                playerCardElement.classList.add('attacking');
+                setTimeout(() => {
+                    if (playerCardElement) playerCardElement.classList.remove('attacking');
+                    if (botCardElement) {
+                        botCardElement.classList.add('damaged');
+                        // Afficher les dégâts
+                        showDamage('bot', myDamage, opponentEffectiveness);
+                        // Mettre à jour la barre de vie du bot
+                        updateHealthBar('bot', opponentHP, botMaxHP);
+                        setTimeout(() => {
+                            if (botCardElement) botCardElement.classList.remove('damaged');
+                        }, 400);
+                    }
+                }, 250);
+            }
         }
         
         // Animation d'attaque du bot
         setTimeout(() => {
-            if (playerCardElement && opponentDamage > 0) {
-                botCardElement?.classList.add('attacking');
-                setTimeout(() => {
-                    botCardElement?.classList.remove('attacking');
-                    playerCardElement.classList.add('damaged');
-                    // Afficher les dégâts
-                    showDamage('player', opponentDamage, myEffectiveness);
-                    // Mettre à jour la barre de vie du joueur
-                    updateHealthBar('player', myHP, playerMaxHP);
-                    setTimeout(() => playerCardElement.classList.remove('damaged'), 400);
-                }, 250);
+            if (opponentDamage > 0) {
+                // Vérifier que les éléments existent avant d'ajouter les classes
+                if (botCardElement) {
+                    botCardElement.classList.add('attacking');
+                    setTimeout(() => {
+                        if (botCardElement) botCardElement.classList.remove('attacking');
+                        if (playerCardElement) {
+                            playerCardElement.classList.add('damaged');
+                            // Afficher les dégâts
+                            showDamage('player', opponentDamage, myEffectiveness);
+                            // Mettre à jour la barre de vie du joueur
+                            updateHealthBar('player', myHP, playerMaxHP);
+                            setTimeout(() => {
+                                if (playerCardElement) playerCardElement.classList.remove('damaged');
+                            }, 400);
+                        }
+                    }, 250);
+                }
             }
         }, 400);
         
@@ -900,20 +914,18 @@ function checkGameEnd() {
     const botPokemonAlive = botDeck.filter((p, i) => p !== null && botDeckHP[i] > 0).length;
     
     if (playerPokemonAlive === 0) {
-        updateGameInfo("💀 Vous avez perdu ! Tous vos Pokémon sont KO !");
+        showDefeatModal();
         return;
     }
     
     if (botPokemonAlive === 0) {
         // Le joueur a gagné ! Donner des crédits
         if (typeof ShopSystem !== 'undefined') {
-            const reward = ShopSystem.rewardWin();
-            updateGameInfo(`🏆 Félicitations ! Vous avez vaincu tous les Pokémon adverses ! +${reward.creditsEarned} crédits !`);
-            
-            // Afficher une notification animée
-            showCreditReward(reward.creditsEarned);
+            ShopSystem.rewardWin().then(reward => {
+                showVictoryModal(reward.creditsEarned);
+            });
         } else {
-            updateGameInfo("🏆 Félicitations ! Vous avez vaincu tous les Pokémon adverses !");
+            showVictoryModal(0);
         }
         return;
     }
@@ -1563,8 +1575,82 @@ function checkMultiplayerGameEnd() {
     updateGameInfo("Choisissez votre prochain Pokémon !");
 }
 
+// Fonction pour afficher la modale de victoire
+function showVictoryModal(creditsEarned) {
+    const modal = document.getElementById('victoryModal');
+    const creditsElement = modal.querySelector('.game-end-credits');
+    
+    // Afficher ou cacher les crédits selon le montant
+    if (creditsEarned > 0) {
+        creditsElement.textContent = `+${creditsEarned} crédits !`;
+        creditsElement.style.display = 'block';
+    } else {
+        creditsElement.style.display = 'none';
+    }
+    
+    // Configurer les boutons
+    const replayBtn = modal.querySelector('.replay-btn');
+    const homeBtn = modal.querySelector('.home-btn');
+    
+    replayBtn.onclick = () => {
+        modal.classList.add('hidden');
+        window.location.href = 'game.html';
+    };
+    
+    homeBtn.onclick = () => {
+        modal.classList.add('hidden');
+        window.location.href = 'index.html';
+    };
+    
+    // Afficher la modale
+    modal.classList.remove('hidden');
+    
+    // Afficher la notification de crédits si applicable
+    if (creditsEarned > 0 && typeof showCreditReward !== 'undefined') {
+        showCreditReward(creditsEarned);
+    }
+}
+
+// Fonction pour afficher la modale de défaite
+function showDefeatModal() {
+    const modal = document.getElementById('defeatModal');
+    
+    // Configurer les boutons
+    const replayBtn = modal.querySelector('.replay-btn');
+    const homeBtn = modal.querySelector('.home-btn');
+    
+    replayBtn.onclick = () => {
+        modal.classList.add('hidden');
+        window.location.href = 'game.html';
+    };
+    
+    homeBtn.onclick = () => {
+        modal.classList.add('hidden');
+        window.location.href = 'index.html';
+    };
+    
+    // Afficher la modale
+    modal.classList.remove('hidden');
+}
+
 // Initialiser le jeu au chargement de la page
 document.addEventListener('DOMContentLoaded', initGame);
+
+// Raccourcis clavier pour le développement (à supprimer en production)
+document.addEventListener('keydown', (e) => {
+    // Ctrl + V = Test Victoire
+    if (e.ctrlKey && e.key === 'v') {
+        e.preventDefault();
+        console.log('🏆 [DEV] Affichage de la modale de victoire');
+        showVictoryModal(500);
+    }
+    // Ctrl + D = Test Défaite
+    if (e.ctrlKey && e.key === 'd') {
+        e.preventDefault();
+        console.log('💀 [DEV] Affichage de la modale de défaite');
+        showDefeatModal();
+    }
+});
 
 // Export des fonctions pour utilisation
 if (typeof module !== 'undefined' && module.exports) {
